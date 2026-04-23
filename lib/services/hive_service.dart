@@ -21,11 +21,79 @@ class HiveService {
       Hive.box<MataKuliah>(_mataKuliahBoxName);
   static Box getSettingsBox() => Hive.box(_settingsBoxName);
 
+  static int _dateKey(DateTime dt) => dt.year * 10000 + dt.month * 100 + dt.day;
+
   /// Returns true only on the very first app launch, then flips the flag.
   static bool getIsFirstLaunch() {
     final box = Hive.box(_settingsBoxName);
     final isFirst = box.get('isFirstLaunch', defaultValue: true) as bool;
     if (isFirst) box.put('isFirstLaunch', false);
     return isFirst;
+  }
+
+  /// Allocate an incrementing id (small int) so keys stay unique and
+  /// notification ids remain within safe bounds.
+  static Future<int> allocateTaskId() async {
+    final settings = getSettingsBox();
+    int? next = settings.get('nextTaskId') as int?;
+    final keys = getTaskBox().keys.whereType<int>();
+    var maxKey = 0;
+    for (final k in keys) {
+      if (k > maxKey) maxKey = k;
+    }
+    if (next == null || next <= maxKey) next = maxKey + 1;
+    await settings.put('nextTaskId', next + 1);
+    return next;
+  }
+
+  static Future<int> allocateMataKuliahId() async {
+    final settings = getSettingsBox();
+    int? next = settings.get('nextMataKuliahId') as int?;
+    final keys = getMataKuliahBox().keys.whereType<int>();
+    var maxKey = 0;
+    for (final k in keys) {
+      if (k > maxKey) maxKey = k;
+    }
+    if (next == null || next <= maxKey) next = maxKey + 1;
+    await settings.put('nextMataKuliahId', next + 1);
+    return next;
+  }
+
+  static int getFocusTotalMinutes() =>
+      getSettingsBox().get('focusTotalMinutes', defaultValue: 0) as int;
+  static int getFocusStreakDays() =>
+      getSettingsBox().get('focusStreakDays', defaultValue: 0) as int;
+
+  static Future<void> addFocusMinutes(int minutes) async {
+    if (minutes <= 0) return;
+    final settings = getSettingsBox();
+
+    final total =
+        (settings.get('focusTotalMinutes', defaultValue: 0) as int) + minutes;
+    await settings.put('focusTotalMinutes', total);
+
+    final now = DateTime.now();
+    final todayKey = _dateKey(now);
+    final yesterdayKey = _dateKey(now.subtract(const Duration(days: 1)));
+
+    final lastKey = settings.get('focusLastDayKey', defaultValue: 0) as int;
+    var streak = settings.get('focusStreakDays', defaultValue: 0) as int;
+
+    if (lastKey == todayKey) {
+      // already counted for today
+    } else if (lastKey == yesterdayKey) {
+      streak = streak <= 0 ? 1 : streak + 1;
+    } else {
+      streak = 1;
+    }
+
+    await settings.put('focusLastDayKey', todayKey);
+    await settings.put('focusStreakDays', streak);
+  }
+
+  static Future<void> resetAllData() async {
+    await getTaskBox().clear();
+    await getMataKuliahBox().clear();
+    await getSettingsBox().clear();
   }
 }

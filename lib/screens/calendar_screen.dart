@@ -25,32 +25,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _prevMonth() => setState(() {
-        _focusedMonth =
-            DateTime(_focusedMonth.year, _focusedMonth.month - 1);
+        _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
       });
 
   void _nextMonth() => setState(() {
-        _focusedMonth =
-            DateTime(_focusedMonth.year, _focusedMonth.month + 1);
+        _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
       });
 
   // Convert day-of-week header index -> label
-  static const _dayLabels = [
-    'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'
-  ];
+  static const _dayLabels = ['SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'];
 
   String _monthYearLabel(DateTime dt) {
     const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
     ];
     return '${bulan[dt.month - 1]} ${dt.year}';
   }
 
   String _bulanLabel(int month) {
     const bulan = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
     ];
     return bulan[month - 1];
   }
@@ -76,23 +92,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
           backgroundColor:
               isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const TaskFormScreen()),
-            ),
+            onPressed: () async {
+              final ok = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(builder: (_) => const TaskFormScreen()),
+              );
+              if (!mounted) return;
+              if (ok == true) {
+                provider.reload();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tugas berhasil disimpan')),
+                );
+              }
+            },
             backgroundColor: cs.primary,
             child: const Icon(Icons.add_rounded, color: Colors.white),
           ),
-
           body: CustomScrollView(
             slivers: [
               // ── AppBar ──────────────────────────────────────────────
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor: isDark
-                    ? const Color(0xFF0F0D13)
-                    : const Color(0xFFF4F3FF),
+                backgroundColor:
+                    isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -144,7 +167,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF1C1826)
-                            : Colors.white,
+                            : const Color(0xFFF1F0FF),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -170,7 +193,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   _monthYearLabel(_focusedMonth),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w800,
                                     color: isDark
                                         ? const Color(0xFFEDE9FE)
@@ -360,8 +383,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 );
               }
 
-              final date = DateTime(
-                  _focusedMonth.year, _focusedMonth.month, dayNum);
+              final date =
+                  DateTime(_focusedMonth.year, _focusedMonth.month, dayNum);
               final isToday = date == today;
               final isSelected = _selectedDay != null &&
                   date.year == _selectedDay!.year &&
@@ -397,7 +420,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF1E1040)
+                          ? cs.primary
                           : isToday
                               ? cs.primary.withOpacity(0.14)
                               : Colors.transparent,
@@ -440,9 +463,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     margin: const EdgeInsets.symmetric(
                                         horizontal: 1),
                                     decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? Colors.white
-                                          : dotColor,
+                                      color:
+                                          isSelected ? Colors.white : dotColor,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -483,13 +505,10 @@ class _NavBtn extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF2D2640)
-              : const Color(0xFFF0EEFF),
+          color: isDark ? const Color(0xFF2D2640) : const Color(0xFFF0EEFF),
           borderRadius: BorderRadius.circular(10),
         ),
-        child:
-            Icon(icon, color: cs.onSurface.withOpacity(0.7), size: 22),
+        child: Icon(icon, color: cs.onSurface.withOpacity(0.7), size: 22),
       ),
     );
   }
@@ -651,8 +670,7 @@ class _CalendarTaskTile extends StatelessWidget {
                         ),
                         const Spacer(),
                         Icon(Icons.access_time_rounded,
-                            size: 13,
-                            color: cs.onSurface.withOpacity(0.4)),
+                            size: 13, color: cs.onSurface.withOpacity(0.4)),
                         const SizedBox(width: 4),
                         Text(
                           formatJam(task.deadline),
@@ -687,9 +705,7 @@ class _CalendarTaskTile extends StatelessWidget {
 
                     // Description / course
                     Text(
-                      task.catatan.isNotEmpty
-                          ? task.catatan
-                          : task.mataKuliah,
+                      task.catatan.isNotEmpty ? task.catatan : task.mataKuliah,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

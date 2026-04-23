@@ -51,21 +51,34 @@ class _TaskListScreenState extends State<TaskListScreen>
         // Group into: Hari ini / Mendatang
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
-        final hariIni =
-            filtered.where((t) => DateTime(t.deadline.year, t.deadline.month,
-                    t.deadline.day) ==
-                today).toList();
-        final mendatang =
-            filtered.where((t) => DateTime(t.deadline.year, t.deadline.month,
-                    t.deadline.day) !=
-                today).toList();
+        final hariIni = filtered
+            .where((t) =>
+                DateTime(t.deadline.year, t.deadline.month, t.deadline.day) ==
+                today)
+            .toList();
+        final mendatang = filtered
+            .where((t) =>
+                DateTime(t.deadline.year, t.deadline.month, t.deadline.day) !=
+                today)
+            .toList();
 
         return Scaffold(
           backgroundColor:
               isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const TaskFormScreen())),
+            onPressed: () async {
+              final ok = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(builder: (_) => const TaskFormScreen()),
+              );
+              if (!mounted) return;
+              if (ok == true) {
+                taskProv.reload();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tugas berhasil disimpan')),
+                );
+              }
+            },
             backgroundColor: cs.primary,
             icon: const Icon(Icons.add_rounded, color: Colors.white),
             label: const Text('Tambah Tugas',
@@ -77,9 +90,8 @@ class _TaskListScreenState extends State<TaskListScreen>
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor: isDark
-                    ? const Color(0xFF0F0D13)
-                    : const Color(0xFFF4F3FF),
+                backgroundColor:
+                    isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -96,9 +108,8 @@ class _TaskListScreenState extends State<TaskListScreen>
                               borderSide: BorderSide.none,
                             ),
                             filled: true,
-                            fillColor: isDark
-                                ? const Color(0xFF1C1826)
-                                : Colors.white,
+                            fillColor:
+                                isDark ? const Color(0xFF1C1826) : Colors.white,
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
@@ -117,8 +128,7 @@ class _TaskListScreenState extends State<TaskListScreen>
                         ),
                       )
                     : Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Row(
                           children: [
                             Icon(Icons.menu_rounded,
@@ -159,15 +169,13 @@ class _TaskListScreenState extends State<TaskListScreen>
                       controller: _tabController,
                       isScrollable: true,
                       labelColor: cs.primary,
-                      unselectedLabelColor:
-                          cs.onSurface.withOpacity(0.45),
+                      unselectedLabelColor: cs.onSurface.withOpacity(0.45),
                       labelStyle: const TextStyle(
                           fontWeight: FontWeight.w800, fontSize: 14),
                       unselectedLabelStyle: const TextStyle(
                           fontWeight: FontWeight.w500, fontSize: 14),
                       indicator: UnderlineTabIndicator(
-                        borderSide:
-                            BorderSide(width: 3, color: cs.primary),
+                        borderSide: BorderSide(width: 3, color: cs.primary),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(3),
                           topRight: Radius.circular(3),
@@ -252,14 +260,12 @@ class _TaskListScreenState extends State<TaskListScreen>
                                 children: [
                                   Icon(Icons.inbox_outlined,
                                       size: 56,
-                                      color:
-                                          cs.onSurface.withOpacity(0.2)),
+                                      color: cs.onSurface.withOpacity(0.2)),
                                   const SizedBox(height: 12),
                                   Text(
                                     'Tidak ada tugas aktif',
                                     style: TextStyle(
-                                      color:
-                                          cs.onSurface.withOpacity(0.4),
+                                      color: cs.onSurface.withOpacity(0.4),
                                       fontSize: 15,
                                     ),
                                   ),
@@ -267,16 +273,16 @@ class _TaskListScreenState extends State<TaskListScreen>
                               ),
                             )
                           : ListView(
-                              padding: const EdgeInsets.fromLTRB(
-                                  16, 4, 16, 120),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 4, 16, 120),
                               children: [
                                 if (hariIni.isNotEmpty) ...[
                                   _SectionLabel(label: 'Hari Ini'),
                                   const SizedBox(height: 10),
                                   ...hariIni.map(
                                     (task) => Padding(
-                                      padding: const EdgeInsets.only(
-                                          bottom: 10),
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
                                       child: _TaskListCard(
                                         task: task,
                                         warnaMatKul: Color(
@@ -290,9 +296,8 @@ class _TaskListScreenState extends State<TaskListScreen>
                                         ),
                                         onSelesai: () =>
                                             taskProv.tandaiSelesai(task),
-                                        onHapus: () =>
-                                            _hapusDenganUndo(context,
-                                                taskProv, task),
+                                        onHapus: () => _hapusDenganUndo(
+                                            context, taskProv, task),
                                       ),
                                     ),
                                   ),
@@ -303,8 +308,8 @@ class _TaskListScreenState extends State<TaskListScreen>
                                   const SizedBox(height: 10),
                                   ...mendatang.map(
                                     (task) => Padding(
-                                      padding: const EdgeInsets.only(
-                                          bottom: 10),
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
                                       child: _TaskListCard(
                                         task: task,
                                         warnaMatKul: Color(
@@ -318,9 +323,8 @@ class _TaskListScreenState extends State<TaskListScreen>
                                         ),
                                         onSelesai: () =>
                                             taskProv.tandaiSelesai(task),
-                                        onHapus: () =>
-                                            _hapusDenganUndo(context,
-                                                taskProv, task),
+                                        onHapus: () => _hapusDenganUndo(
+                                            context, taskProv, task),
                                       ),
                                     ),
                                   ),
@@ -373,8 +377,7 @@ class _SectionLabel extends StatelessWidget {
       style: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w800,
-        color:
-            isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+        color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
       ),
     );
   }
@@ -400,8 +403,7 @@ class _FilterChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected
               ? cs.primary
@@ -449,8 +451,8 @@ class _TabBadge extends StatelessWidget {
       ),
       child: Text(
         '$count',
-        style: TextStyle(
-            fontSize: 11, fontWeight: FontWeight.w800, color: color),
+        style:
+            TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: color),
       ),
     );
   }
@@ -540,10 +542,10 @@ class _TaskListCard extends StatelessWidget {
 
     return Dismissible(
       key: Key('task_${task.id}'),
-      background: _slideAction(
-          const Color(0xFF059669), Icons.check_rounded, Alignment.centerLeft, 'Selesai'),
-      secondaryBackground: _slideAction(
-          const Color(0xFFDC2626), Icons.delete_rounded, Alignment.centerRight, 'Hapus'),
+      background: _slideAction(const Color(0xFF059669), Icons.check_rounded,
+          Alignment.centerLeft, 'Selesai'),
+      secondaryBackground: _slideAction(const Color(0xFFDC2626),
+          Icons.delete_rounded, Alignment.centerRight, 'Hapus'),
       confirmDismiss: (dir) async {
         if (dir == DismissDirection.startToEnd) {
           onSelesai();
@@ -713,8 +715,8 @@ class _TaskListCard extends StatelessWidget {
   Widget _slideAction(
       Color color, IconData icon, Alignment alignment, String label) {
     return Container(
-      decoration: BoxDecoration(
-          color: color, borderRadius: BorderRadius.circular(16)),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
       alignment: alignment,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(

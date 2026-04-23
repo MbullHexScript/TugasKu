@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 import '../models/task_model.dart';
-import 'task_form_screen.dart';
 import 'task_list_screen.dart';
 import 'calendar_screen.dart';
 import 'statistics_screen.dart';
 import 'settings_screen.dart';
+import 'focus_session_screen.dart';
+import 'task_detail_screen.dart';
 
 // ─────────────────────────────── Root Shell ──────────────────────────────────
 
@@ -34,7 +35,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final List<Widget> halaman = [
-      const _DashboardTab(),
+      _DashboardTab(
+        onLihatSemua: () => setState(() => _tabIndex = 1),
+        onMulaiFokus: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const FocusSessionScreen()),
+        ),
+      ),
       const TaskListScreen(),
       const CalendarScreen(),
       const StatisticsScreen(),
@@ -43,15 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: IndexedStack(index: _tabIndex, children: halaman),
-      floatingActionButton: _tabIndex == 1
-          ? FloatingActionButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TaskFormScreen()),
-              ),
-              child: const Icon(Icons.add_rounded),
-            )
-          : null,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF150F20) : Colors.white,
@@ -130,7 +128,13 @@ class _NavItem {
 // ─────────────────────────────── Dashboard Tab ───────────────────────────────
 
 class _DashboardTab extends StatelessWidget {
-  const _DashboardTab();
+  final VoidCallback onLihatSemua;
+  final VoidCallback onMulaiFokus;
+
+  const _DashboardTab({
+    required this.onLihatSemua,
+    required this.onMulaiFokus,
+  });
 
   String _greeting() {
     final jam = DateTime.now().hour;
@@ -415,7 +419,7 @@ class _DashboardTab extends StatelessWidget {
                           ),
                         const Spacer(),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: onLihatSemua,
                           child: Text(
                             'Lihat Semua',
                             style: TextStyle(
@@ -437,84 +441,95 @@ class _DashboardTab extends StatelessWidget {
                     else
                       ...provider.tugasHariIni.map((t) => Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: _TugasHariIniCard(task: t),
+                            child: _TugasHariIniCard(
+                              task: t,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => TaskDetailScreen(task: t),
+                                ),
+                              ),
+                            ),
                           )),
 
                     const SizedBox(height: 20),
 
                     // ── Focus session banner ──
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 22, vertical: 20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Color(0xFF7C3AED),
-                            Color(0xFF6D28D9),
-                          ],
+                    GestureDetector(
+                      onTap: onMulaiFokus,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 22, vertical: 20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Color(0xFF7C3AED),
+                              Color(0xFF6D28D9),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Mulai Sesi Fokus?',
-                                  style: TextStyle(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'Mulai Sesi Fokus?',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Singkirkan distraksi selama 25 menit.',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.nightlight_round,
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    size: 28,
                                   ),
                                 ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Singkirkan distraksi selama 25 menit.',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.add,
+                                        size: 14, color: Color(0xFF7C3AED)),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.nightlight_round,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  width: 20,
-                                  height: 20,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.add,
-                                      size: 14, color: Color(0xFF7C3AED)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ]),
@@ -593,7 +608,8 @@ class _StatCard extends StatelessWidget {
 
 class _TugasHariIniCard extends StatelessWidget {
   final Task task;
-  const _TugasHariIniCard({required this.task});
+  final VoidCallback onTap;
+  const _TugasHariIniCard({required this.task, required this.onTap});
 
   Color _leftBarColor() {
     switch (task.prioritas) {
@@ -618,92 +634,95 @@ class _TugasHariIniCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final barColor = _leftBarColor();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1826) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // left color bar
-          Container(
-            width: 4,
-            height: 72,
-            decoration: BoxDecoration(
-              color: barColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(14),
-                bottomLeft: Radius.circular(14),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1826) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // left color bar
+            Container(
+              width: 4,
+              height: 72,
+              decoration: BoxDecoration(
+                color: barColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(14),
+                  bottomLeft: Radius.circular(14),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.namaTugas,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: isDark
+                            ? const Color(0xFFEDE9FE)
+                            : const Color(0xFF1E1040),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      task.mataKuliah.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface.withOpacity(0.4),
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 14),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    task.namaTugas,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    'Hari ini!',
                     style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: isDark
-                          ? const Color(0xFFEDE9FE)
-                          : const Color(0xFF1E1040),
+                      color: barColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    task.mataKuliah.toUpperCase(),
+                    _formatJam(task.deadline),
                     style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface.withOpacity(0.4),
-                      letterSpacing: 0.4,
+                      color: cs.onSurface.withOpacity(0.45),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Hari ini!',
-                  style: TextStyle(
-                    color: barColor,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  _formatJam(task.deadline),
-                  style: TextStyle(
-                    color: cs.onSurface.withOpacity(0.45),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

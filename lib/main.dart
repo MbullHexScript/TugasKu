@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/mata_kuliah_provider.dart';
+import 'providers/focus_provider.dart';
 import 'services/hive_service.dart';
 import 'services/notification_service.dart';
 import 'screens/splash_screen.dart';
@@ -12,7 +13,7 @@ void main() async {
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
+    statusBarIconBrightness: Brightness.dark,
   ));
 
   await HiveService.init();
@@ -26,6 +27,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => MataKuliahProvider()),
         ChangeNotifierProvider(
             create: (_) => TaskProvider(notificationService)),
+        ChangeNotifierProvider(create: (_) => FocusProvider()),
       ],
       child: const TugasKuApp(),
     ),

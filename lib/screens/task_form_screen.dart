@@ -21,6 +21,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late String _prioritas;
   late DateTime _deadline;
   late String _status;
+  bool _isSaving = false;
 
   bool get isEditMode => widget.task != null;
 
@@ -31,8 +32,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _namaTugasCtrl = TextEditingController(text: task?.namaTugas ?? '');
     _mataKuliah = task?.mataKuliah ?? '';
     _prioritas = task?.prioritas ?? 'sedang';
-    _deadline =
-        task?.deadline ?? DateTime.now().add(const Duration(days: 7));
+    _deadline = task?.deadline ?? DateTime.now().add(const Duration(days: 7));
     _status = task?.status ?? 'belum';
   }
 
@@ -64,44 +64,70 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   Future<void> _simpan() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_isSaving) return;
+
+    final form = _formKey.currentState;
+    if (form == null) return;
+
+    FocusScope.of(context).unfocus();
+
+    if (!form.validate()) return;
     if (_mataKuliah.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pilih mata kuliah terlebih dahulu')));
       return;
     }
 
-    final provider = context.read<TaskProvider>();
-
-    if (isEditMode) {
-      final task = widget.task!;
-      task.namaTugas = _namaTugasCtrl.text.trim();
-      task.mataKuliah = _mataKuliah;
-      task.prioritas = _prioritas;
-      task.deadline = _deadline;
-      task.status = _status;
-      task.isSelesai = _status == 'selesai';
-      await provider.editTugas(task);
-    } else {
-      final task = Task(
-        id: 0,
-        namaTugas: _namaTugasCtrl.text.trim(),
-        mataKuliah: _mataKuliah,
-        prioritas: _prioritas,
-        deadline: _deadline,
-        status: _status,
-        createdAt: DateTime.now(),
+    setState(() => _isSaving = true);
+    try {
+      final provider = context.read<TaskProvider>();
+      if (isEditMode) {
+        final task = widget.task!;
+        task.namaTugas = _namaTugasCtrl.text.trim();
+        task.mataKuliah = _mataKuliah;
+        task.prioritas = _prioritas;
+        task.deadline = _deadline;
+        task.status = _status;
+        task.isSelesai = _status == 'selesai';
+        await provider.editTugas(task);
+      } else {
+        final task = Task(
+          id: 0,
+          namaTugas: _namaTugasCtrl.text.trim(),
+          mataKuliah: _mataKuliah,
+          prioritas: _prioritas,
+          deadline: _deadline,
+          isSelesai: _status == 'selesai',
+          status: _status,
+          createdAt: DateTime.now(),
+        );
+        await provider.tambahTugas(task);
+      }
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan tugas: $e')),
       );
-      await provider.tambahTugas(task);
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
-
-    if (mounted) Navigator.pop(context);
   }
 
   String _formatDeadline(DateTime dt) {
     const bulan = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des'
     ];
     return '${dt.day} ${bulan[dt.month - 1]} ${dt.year}, '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
@@ -125,7 +151,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: cs.primary),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isSaving ? null : () => Navigator.pop(context, false),
         ),
         title: Text(
           isEditMode ? 'Edit Tugas' : 'Tambah Tugas',
@@ -161,9 +187,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
-                color: isDark
-                    ? const Color(0xFFEDE9FE)
-                    : const Color(0xFF1E1040),
+                color:
+                    isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
                 height: 1.2,
               ),
             ),
@@ -177,23 +202,20 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               controller: _namaTugasCtrl,
               decoration: InputDecoration(
                 hintText: 'Masukkan nama tugas...',
-                hintStyle:
-                    TextStyle(color: cs.onSurface.withOpacity(0.35)),
+                hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
                 filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF1C1826)
-                    : const Color(0xFFEEEBFF),
+                fillColor:
+                    isDark ? const Color(0xFF1C1826) : const Color(0xFFEEEBFF),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               ),
-              validator: (val) =>
-                  (val == null || val.trim().isEmpty)
-                      ? 'Nama tugas wajib diisi'
-                      : null,
+              validator: (val) => (val == null || val.trim().isEmpty)
+                  ? 'Nama tugas wajib diisi'
+                  : null,
               textCapitalization: TextCapitalization.sentences,
             ),
 
@@ -207,24 +229,21 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               decoration: InputDecoration(
                 hintText: 'Pilih mata kuliah',
                 filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF1C1826)
-                    : const Color(0xFFEEEBFF),
+                fillColor:
+                    isDark ? const Color(0xFF1C1826) : const Color(0xFFEEEBFF),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               ),
-              icon: Icon(Icons.keyboard_arrow_down_rounded,
-                  color: cs.primary),
+              icon: Icon(Icons.keyboard_arrow_down_rounded, color: cs.primary),
               items: mkProvider.namaMataKuliah
                   .map((nama) =>
                       DropdownMenuItem(value: nama, child: Text(nama)))
                   .toList(),
-              onChanged: (val) =>
-                  setState(() => _mataKuliah = val ?? ''),
+              onChanged: (val) => setState(() => _mataKuliah = val ?? ''),
               validator: (val) =>
                   (val == null || val.isEmpty) ? 'Pilih mata kuliah' : null,
             ),
@@ -264,16 +283,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       for (final p in ['rendah', 'sedang', 'tinggi'])
                         Expanded(
                           child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: GestureDetector(
-                              onTap: () =>
-                                  setState(() => _prioritas = p),
+                              onTap: () => setState(() => _prioritas = p),
                               child: AnimatedContainer(
-                                duration:
-                                    const Duration(milliseconds: 180),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10),
+                                duration: const Duration(milliseconds: 180),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
                                 decoration: BoxDecoration(
                                   color: _prioritas == p
                                       ? cs.primary
@@ -379,15 +395,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               value: _status,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF1C1826)
-                    : const Color(0xFFEEEBFF),
+                fillColor:
+                    isDark ? const Color(0xFF1C1826) : const Color(0xFFEEEBFF),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               ),
               icon: Icon(Icons.unfold_more_rounded,
                   color: cs.onSurface.withOpacity(0.5)),
@@ -397,8 +412,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     value: 'proses', child: Text('Sedang Dikerjakan')),
                 DropdownMenuItem(value: 'selesai', child: Text('Selesai')),
               ],
-              onChanged: (val) =>
-                  setState(() => _status = val ?? 'belum'),
+              onChanged: (val) => setState(() => _status = val ?? 'belum'),
             ),
 
             const SizedBox(height: 32),
@@ -408,7 +422,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed:
+                        _isSaving ? null : () => Navigator.pop(context, false),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       side: BorderSide(
@@ -430,11 +445,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed: _simpan,
-                    icon: const Icon(Icons.save_rounded,
-                        color: Colors.white, size: 20),
+                    onPressed: _isSaving ? null : _simpan,
+                    icon: _isSaving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.save_rounded,
+                            color: Colors.white, size: 20),
                     label: Text(
-                      isEditMode ? 'Simpan' : 'Tambah Tugas',
+                      _isSaving
+                          ? 'Menyimpan...'
+                          : (isEditMode ? 'Simpan' : 'Tambah Tugas'),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
