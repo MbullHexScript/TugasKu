@@ -14,6 +14,20 @@ class HiveService {
     await Hive.openBox<Task>(_taskBoxName);
     await Hive.openBox<MataKuliah>(_mataKuliahBoxName);
     await Hive.openBox(_settingsBoxName);
+
+    // Migrasi: hapus data lama yang di-seed otomatis (versi sebelumnya)
+    // agar user bisa mulai fresh dengan mata kuliah sendiri
+    final settings = Hive.box(_settingsBoxName);
+    final hadOldSeed = settings.get('seededMataKuliah', defaultValue: false) as bool;
+    final migratedClean = settings.get('migratedClean', defaultValue: false) as bool;
+    if (hadOldSeed && !migratedClean) {
+      // Hapus semua data lama
+      await Hive.box<Task>(_taskBoxName).clear();
+      await Hive.box<MataKuliah>(_mataKuliahBoxName).clear();
+      await settings.put('seededMataKuliah', false);
+      await settings.put('migratedClean', true);
+      // Jangan hapus isFirstLaunch supaya tidak tampil onboarding lagi
+    }
   }
 
   static Box<Task> getTaskBox() => Hive.box<Task>(_taskBoxName);
@@ -94,6 +108,13 @@ class HiveService {
   static Future<void> resetAllData() async {
     await getTaskBox().clear();
     await getMataKuliahBox().clear();
-    await getSettingsBox().clear();
+    // Hapus semua settings kecuali migratedClean agar migrasi tidak jalan lagi
+    await getSettingsBox().delete('nextTaskId');
+    await getSettingsBox().delete('nextMataKuliahId');
+    await getSettingsBox().delete('focusTotalMinutes');
+    await getSettingsBox().delete('focusStreakDays');
+    await getSettingsBox().delete('focusLastDayKey');
+    await getSettingsBox().delete('seededMataKuliah');
+    await getSettingsBox().delete('isFirstLaunch');
   }
 }

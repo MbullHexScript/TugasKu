@@ -171,10 +171,57 @@ class SettingsScreen extends StatelessWidget {
                             ),
                             if (mkProv.daftarMataKuliah.isEmpty)
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                                child: Text(
-                                  'Belum ada mata kuliah. Tambahkan dulu ya.',
-                                  style: TextStyle(color: cs.onSurface.withOpacity(0.55)),
+                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: cs.primary.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: cs.primary.withOpacity(0.2)),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.info_outline_rounded, color: cs.primary, size: 28),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Belum ada mata kuliah!',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          color: cs.primary,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Tambahkan mata kuliah terlebih dahulu agar dapat membuat tugas.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: cs.onSurface.withOpacity(0.6),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: FilledButton.icon(
+                                          onPressed: () => _dialogTambahMK(context, mkProv),
+                                          icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                                          label: const Text(
+                                            'Tambah Mata Kuliah Sekarang',
+                                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                                          ),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: cs.primary,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            elevation: 0,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               )
                             else

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/task_model.dart';
 import '../providers/task_provider.dart';
 import '../providers/mata_kuliah_provider.dart';
+import 'settings_screen.dart';
 
 /// Screen untuk tambah / edit tugas
 class TaskFormScreen extends StatefulWidget {
@@ -37,6 +38,18 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Auto-pilih mata kuliah pertama jika belum dipilih (saat tambah tugas baru)
+    if (_mataKuliah.isEmpty && !isEditMode) {
+      final mkProvider = context.read<MataKuliahProvider>();
+      if (mkProvider.namaMataKuliah.isNotEmpty) {
+        _mataKuliah = mkProvider.namaMataKuliah.first;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _namaTugasCtrl.dispose();
     super.dispose();
@@ -50,8 +63,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       lastDate: DateTime.now().add(const Duration(days: 730)),
     );
     if (picked == null) return;
+    if (!mounted) return; // guard setelah await pertama
 
     final time = await showTimePicker(
+      // ignore: use_build_context_synchronously
       context: context,
       initialTime: TimeOfDay.fromDateTime(_deadline),
     );
@@ -78,9 +93,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       return;
     }
 
+    // Simpan referensi sebelum async gap
+    final provider = context.read<TaskProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+
     setState(() => _isSaving = true);
     try {
-      final provider = context.read<TaskProvider>();
       if (isEditMode) {
         final task = widget.task!;
         task.namaTugas = _namaTugasCtrl.text.trim();
@@ -103,10 +122,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         );
         await provider.tambahTugas(task);
       }
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) nav.pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Gagal menyimpan tugas: $e')),
       );
     } finally {
@@ -139,8 +158,96 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Tampilkan pesan jika belum ada mata kuliah
+    if (!isEditMode && mkProvider.namaMataKuliah.isEmpty) {
+      return Scaffold(
+        backgroundColor:
+            isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: cs.primary),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          title: Text(
+            'Tambah Tugas',
+            style: TextStyle(
+              color: cs.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: cs.primary.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.menu_book_rounded, color: cs.primary, size: 40),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Belum Ada Mata Kuliah',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Tambahkan mata kuliah terlebih dahulu di halaman Pengaturan, lalu kembali untuk menambahkan tugas.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: cs.onSurface.withOpacity(0.55),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                    // Navigasi ke Settings agar user bisa tambah mata kuliah
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 18),
+                  label: const Text(
+                    'Buka Pengaturan',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cs.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Auto-select mata kuliah pertama jika belum dipilih
+    // (sudah dihandle di didChangeDependencies, ini sebagai fallback)
     if (_mataKuliah.isEmpty && mkProvider.namaMataKuliah.isNotEmpty) {
-      _mataKuliah = mkProvider.namaMataKuliah.first;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _mataKuliah = mkProvider.namaMataKuliah.first);
+      });
     }
 
     return Scaffold(

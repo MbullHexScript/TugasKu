@@ -41,25 +41,46 @@ class _TaskListScreenState extends State<TaskListScreen>
 
     return Consumer2<TaskProvider, MataKuliahProvider>(
       builder: (context, taskProv, mkProv, _) {
-        // Apply local priority filter
-        List<Task> filtered = taskProv.tugasAktif;
+        // Gunakan semuaTugasAktif (tanpa filter provider) sebagai base
+        // lalu filter murni di screen level agar badge & list selalu sinkron
+        List<Task> filtered = taskProv.semuaTugasAktif;
+
+        // Filter pencarian
+        final q = taskProv.searchQuery.toLowerCase();
+        if (q.isNotEmpty) {
+          filtered = filtered
+              .where((t) =>
+                  t.namaTugas.toLowerCase().contains(q) ||
+                  t.mataKuliah.toLowerCase().contains(q))
+              .toList();
+        }
+
+        // Filter prioritas (lokal)
         if (_filterPrioritas != 'semua') {
           filtered =
               filtered.where((t) => t.prioritas == _filterPrioritas).toList();
         }
 
-        // Group into: Hari ini / Mendatang
+        // Urutkan: terlambat & mendekati deadline dulu
+        filtered.sort((a, b) => a.deadline.compareTo(b.deadline));
+
+        // Group: Terlambat / Hari Ini / Mendatang
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
+        final terlambat = filtered
+            .where((t) =>
+                DateTime(t.deadline.year, t.deadline.month, t.deadline.day)
+                    .isBefore(today))
+            .toList();
         final hariIni = filtered
             .where((t) =>
-                DateTime(t.deadline.year, t.deadline.month, t.deadline.day) ==
-                today)
+                DateTime(t.deadline.year, t.deadline.month, t.deadline.day)
+                    .isAtSameMomentAs(today))
             .toList();
         final mendatang = filtered
             .where((t) =>
-                DateTime(t.deadline.year, t.deadline.month, t.deadline.day) !=
-                today)
+                DateTime(t.deadline.year, t.deadline.month, t.deadline.day)
+                    .isAfter(today))
             .toList();
 
         return Scaffold(
@@ -67,6 +88,8 @@ class _TaskListScreenState extends State<TaskListScreen>
               isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
+              // Simpan referensi sebelum async gap
+              final messenger = ScaffoldMessenger.of(context);
               final ok = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(builder: (_) => const TaskFormScreen()),
@@ -74,8 +97,11 @@ class _TaskListScreenState extends State<TaskListScreen>
               if (!mounted) return;
               if (ok == true) {
                 taskProv.reload();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Tugas berhasil disimpan')),
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Tugas berhasil ditambahkan!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
                 );
               }
             },
@@ -187,10 +213,11 @@ class _TaskListScreenState extends State<TaskListScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text('Aktif'),
-                              const SizedBox(width: 6),
-                              _TabBadge(
-                                  count: taskProv.jumlahAktif,
-                                  color: cs.primary),
+                               const SizedBox(width: 6),
+                               _TabBadge(
+                                   // Pakai semuaTugasAktif.length agar sinkron dengan list
+                                   count: taskProv.semuaTugasAktif.length,
+                                   color: cs.primary),
                             ],
                           ),
                         ),
@@ -261,14 +288,24 @@ class _TaskListScreenState extends State<TaskListScreen>
                                   Icon(Icons.inbox_outlined,
                                       size: 56,
                                       color: cs.onSurface.withOpacity(0.2)),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 16),
                                   Text(
-                                    'Tidak ada tugas aktif',
+                                    _filterPrioritas != 'semua'
+                                        ? 'Tidak ada tugas prioritas "$_filterPrioritas"'
+                                        : 'Belum ada tugas aktif',
                                     style: TextStyle(
                                       color: cs.onSurface.withOpacity(0.4),
                                       fontSize: 15,
                                     ),
                                   ),
+                                  if (_filterPrioritas != 'semua') ...[
+                                    const SizedBox(height: 12),
+                                    TextButton(
+                                      onPressed: () => setState(
+                                          () => _filterPrioritas = 'semua'),
+                                      child: const Text('Reset Filter'),
+                                    ),
+                                  ],
                                 ],
                               ),
                             )
@@ -276,58 +313,84 @@ class _TaskListScreenState extends State<TaskListScreen>
                               padding:
                                   const EdgeInsets.fromLTRB(16, 4, 16, 120),
                               children: [
+                                // Terlambat
+                                if (terlambat.isNotEmpty) ...[
+                                  _SectionLabel(
+                                      label: '⚠️ Terlambat',
+                                      color: const Color(0xFFDC2626)),
+                                  const SizedBox(height: 10),
+                                  ...terlambat.map((task) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: _TaskListCard(
+                                          task: task,
+                                          warnaMatKul: Color(
+                                              mkProv.getWarna(task.mataKuliah)),
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  TaskDetailScreen(task: task),
+                                            ),
+                                          ),
+                                          onSelesai: () =>
+                                              taskProv.tandaiSelesai(task),
+                                          onHapus: () => _hapusDenganUndo(
+                                              context, taskProv, task),
+                                        ),
+                                      )),
+                                  const SizedBox(height: 8),
+                                ],
+                                // Hari Ini
                                 if (hariIni.isNotEmpty) ...[
                                   _SectionLabel(label: 'Hari Ini'),
                                   const SizedBox(height: 10),
-                                  ...hariIni.map(
-                                    (task) => Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: _TaskListCard(
-                                        task: task,
-                                        warnaMatKul: Color(
-                                            mkProv.getWarna(task.mataKuliah)),
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                TaskDetailScreen(task: task),
+                                  ...hariIni.map((task) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: _TaskListCard(
+                                          task: task,
+                                          warnaMatKul: Color(
+                                              mkProv.getWarna(task.mataKuliah)),
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  TaskDetailScreen(task: task),
+                                            ),
                                           ),
+                                          onSelesai: () =>
+                                              taskProv.tandaiSelesai(task),
+                                          onHapus: () => _hapusDenganUndo(
+                                              context, taskProv, task),
                                         ),
-                                        onSelesai: () =>
-                                            taskProv.tandaiSelesai(task),
-                                        onHapus: () => _hapusDenganUndo(
-                                            context, taskProv, task),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                if (mendatang.isNotEmpty) ...[
+                                      )),
                                   const SizedBox(height: 8),
+                                ],
+                                // Mendatang
+                                if (mendatang.isNotEmpty) ...[
                                   _SectionLabel(label: 'Mendatang'),
                                   const SizedBox(height: 10),
-                                  ...mendatang.map(
-                                    (task) => Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: _TaskListCard(
-                                        task: task,
-                                        warnaMatKul: Color(
-                                            mkProv.getWarna(task.mataKuliah)),
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                TaskDetailScreen(task: task),
+                                  ...mendatang.map((task) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: _TaskListCard(
+                                          task: task,
+                                          warnaMatKul: Color(
+                                              mkProv.getWarna(task.mataKuliah)),
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  TaskDetailScreen(task: task),
+                                            ),
                                           ),
+                                          onSelesai: () =>
+                                              taskProv.tandaiSelesai(task),
+                                          onHapus: () => _hapusDenganUndo(
+                                              context, taskProv, task),
                                         ),
-                                        onSelesai: () =>
-                                            taskProv.tandaiSelesai(task),
-                                        onHapus: () => _hapusDenganUndo(
-                                            context, taskProv, task),
-                                      ),
-                                    ),
-                                  ),
+                                      )),
                                 ],
                               ],
                             ),
@@ -367,7 +430,8 @@ class _TaskListScreenState extends State<TaskListScreen>
 // ── Section Label ──────────────────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final String label;
-  const _SectionLabel({required this.label});
+  final Color? color;
+  const _SectionLabel({required this.label, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -377,7 +441,8 @@ class _SectionLabel extends StatelessWidget {
       style: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w800,
-        color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+        color: color ??
+            (isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040)),
       ),
     );
   }

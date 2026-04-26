@@ -28,34 +28,16 @@ class MataKuliahProvider extends ChangeNotifier {
 
   void _muat() {
     _daftarMataKuliah = HiveService.getMataKuliahBox().values.toList();
-    final settings = HiveService.getSettingsBox();
-    final seeded =
-        settings.get('seededMataKuliah', defaultValue: false) as bool;
-    if (_daftarMataKuliah.isEmpty && !seeded) {
-      _tambahContoh();
-      return;
-    }
     notifyListeners();
   }
 
   void reload() => _muat();
 
-  Future<void> _tambahContoh() async {
-    final contoh = [
-      MataKuliah(id: 1, nama: 'Pemrograman Mobile', warna: warnaDefault[0]),
-      MataKuliah(id: 2, nama: 'Basis Data', warna: warnaDefault[1]),
-      MataKuliah(id: 3, nama: 'Algoritma', warna: warnaDefault[2]),
-    ];
-    final box = HiveService.getMataKuliahBox();
-    for (final mk in contoh) {
-      await box.put(mk.id, mk);
-    }
-    await HiveService.getSettingsBox().put('seededMataKuliah', true);
-    _daftarMataKuliah = contoh;
-    notifyListeners();
-  }
-
   Future<void> tambahMataKuliah(String nama) async {
+    // Cek apakah nama sudah ada
+    if (_daftarMataKuliah.any((m) => m.nama.toLowerCase() == nama.toLowerCase())) {
+      return;
+    }
     final box = HiveService.getMataKuliahBox();
     final id = await HiveService.allocateMataKuliahId();
     final warna = warnaDefault[_daftarMataKuliah.length % warnaDefault.length];
