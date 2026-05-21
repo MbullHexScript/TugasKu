@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../providers/focus_provider.dart';
 import '../providers/mata_kuliah_provider.dart';
 import '../providers/task_provider.dart';
 import '../services/hive_service.dart';
 import 'splash_screen.dart';
+import 'edit_profile_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -13,19 +15,17 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Consumer2<MataKuliahProvider, TaskProvider>(
       builder: (context, mkProv, taskProv, _) {
         return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor:
-                    isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -33,8 +33,6 @@ class SettingsScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Icon(Icons.menu_rounded, color: cs.primary, size: 26),
-                      const SizedBox(width: 14),
                       Text(
                         'Pengaturan',
                         style: TextStyle(
@@ -44,23 +42,8 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Stack(
-                        children: [
-                          Icon(Icons.notifications_outlined, color: cs.primary, size: 26),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFDC2626),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      Icon(Icons.notifications_outlined,
+                          color: cs.primary, size: 26),
                     ],
                   ),
                 ),
@@ -71,46 +54,81 @@ class SettingsScreen extends StatelessWidget {
                   delegate: SliverChildListDelegate(
                     [
                       // Profile header
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: cs.primary.withOpacity(0.35), width: 2),
+                      ValueListenableBuilder<Box>(
+                        valueListenable:
+                            HiveService.getSettingsBox().listenable(
+                          keys: const [
+                            'profileName',
+                            'profileProgram',
+                            'profileSemester'
+                          ],
+                        ),
+                        builder: (context, _, __) {
+                          final name = HiveService.getProfileName();
+                          final program = HiveService.getProfileProgram();
+                          final semester = HiveService.getProfileSemester();
+                          return InkWell(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const EditProfileScreen()),
                             ),
-                            child: CircleAvatar(
-                              radius: 26,
-                              backgroundColor: cs.primary.withOpacity(0.12),
-                              child: Icon(Icons.person_rounded, color: cs.primary, size: 26),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Mahasiswa',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 18,
-                                    color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: cs.primary.withOpacity(0.35),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 26,
+                                      backgroundColor:
+                                          cs.primary.withOpacity(0.12),
+                                      child: Icon(Icons.person_rounded,
+                                          color: cs.primary, size: 26),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Teknik Informatika • Semester 4',
-                                  style: TextStyle(
-                                    color: cs.onSurface.withOpacity(0.55),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 18,
+                                            color: cs.onSurface,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '$program • Semester $semester',
+                                          style: TextStyle(
+                                            color:
+                                                cs.onSurface.withOpacity(0.55),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  Icon(Icons.chevron_right_rounded,
+                                      color: cs.onSurface.withOpacity(0.35)),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 18),
@@ -121,7 +139,8 @@ class SettingsScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 14, 16, 10),
                               child: Row(
                                 children: [
                                   Container(
@@ -131,7 +150,8 @@ class SettingsScreen extends StatelessWidget {
                                       color: cs.primary.withOpacity(0.10),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(Icons.menu_book_rounded, color: cs.primary, size: 18),
+                                    child: Icon(Icons.menu_book_rounded,
+                                        color: cs.primary, size: 18),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -140,28 +160,37 @@ class SettingsScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w800,
                                         fontSize: 15,
-                                        color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                                        color: cs.onSurface,
                                       ),
                                     ),
                                   ),
                                   FilledButton(
-                                    onPressed: () => _dialogTambahMK(context, mkProv),
+                                    onPressed: () =>
+                                        _dialogTambahMK(context, mkProv),
                                     style: FilledButton.styleFrom(
                                       backgroundColor: cs.primary,
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
                                       minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(999)),
                                       elevation: 0,
                                     ),
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                                        Icon(Icons.add_rounded,
+                                            size: 16, color: Colors.white),
                                         SizedBox(width: 6),
                                         Text(
                                           'Tambah',
-                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 12),
                                         ),
                                       ],
                                     ),
@@ -171,18 +200,21 @@ class SettingsScreen extends StatelessWidget {
                             ),
                             if (mkProv.daftarMataKuliah.isEmpty)
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 4, 16, 16),
                                 child: Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: cs.primary.withOpacity(0.08),
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: cs.primary.withOpacity(0.2)),
+                                    border: Border.all(
+                                        color: cs.primary.withOpacity(0.2)),
                                   ),
                                   child: Column(
                                     children: [
-                                      Icon(Icons.info_outline_rounded, color: cs.primary, size: 28),
+                                      Icon(Icons.info_outline_rounded,
+                                          color: cs.primary, size: 28),
                                       const SizedBox(height: 8),
                                       Text(
                                         'Belum ada mata kuliah!',
@@ -206,16 +238,24 @@ class SettingsScreen extends StatelessWidget {
                                       SizedBox(
                                         width: double.infinity,
                                         child: FilledButton.icon(
-                                          onPressed: () => _dialogTambahMK(context, mkProv),
-                                          icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                                          onPressed: () =>
+                                              _dialogTambahMK(context, mkProv),
+                                          icon: const Icon(Icons.add_rounded,
+                                              size: 16, color: Colors.white),
                                           label: const Text(
                                             'Tambah Mata Kuliah Sekarang',
-                                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 13),
                                           ),
                                           style: FilledButton.styleFrom(
                                             backgroundColor: cs.primary,
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12)),
                                             elevation: 0,
                                           ),
                                         ),
@@ -226,15 +266,19 @@ class SettingsScreen extends StatelessWidget {
                               )
                             else
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 0, 16, 16),
                                 child: Column(
                                   children: [
-                                    for (final mk in mkProv.daftarMataKuliah) ...[
+                                    for (final mk
+                                        in mkProv.daftarMataKuliah) ...[
                                       _MataKuliahTile(
                                         nama: mk.nama,
                                         warna: Color(mk.warna),
-                                        subtitle: '${taskProv.semuaTugas.where((t) => t.mataKuliah == mk.nama).length} tugas',
-                                        onDelete: () => _konfirmasiHapusMK(context, mkProv, mk),
+                                        subtitle:
+                                            '${taskProv.semuaTugas.where((t) => t.mataKuliah == mk.nama).length} tugas',
+                                        onDelete: () => _konfirmasiHapusMK(
+                                            context, mkProv, mk),
                                       ),
                                       const SizedBox(height: 10),
                                     ],
@@ -327,7 +371,8 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Tambah Mata Kuliah', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text('Tambah Mata Kuliah',
+            style: TextStyle(fontWeight: FontWeight.w800)),
         content: TextField(
           controller: ctrl,
           decoration: const InputDecoration(
@@ -343,7 +388,9 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal')),
           FilledButton(
             onPressed: () async {
               if (ctrl.text.trim().isEmpty) return;
@@ -357,7 +404,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _konfirmasiHapusMK(BuildContext context, MataKuliahProvider provider, mk) {
+  void _konfirmasiHapusMK(
+      BuildContext context, MataKuliahProvider provider, mk) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
@@ -365,7 +413,9 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Hapus Mata Kuliah?'),
         content: Text('Yakin ingin menghapus "${mk.nama}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal')),
           FilledButton(
             onPressed: () async {
               await provider.hapusMataKuliah(mk);
@@ -385,9 +435,12 @@ class SettingsScreen extends StatelessWidget {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Keluar Akun?'),
-        content: const Text('Ini akan menghapus semua data lokal (tugas & mata kuliah).'),
+        content: const Text(
+            'Ini akan menghapus semua data lokal (tugas & mata kuliah).'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -405,7 +458,8 @@ class SettingsScreen extends StatelessWidget {
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => const SplashScreen(),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
       ),
       (_) => false,
     );
@@ -480,8 +534,10 @@ class _MataKuliahTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF150F20) : const Color(0xFFF4F3FF),
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? cs.surfaceContainerHigh : cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55)),
       ),
       child: Row(
         children: [
@@ -500,7 +556,7 @@ class _MataKuliahTile extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13,
-                    color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -517,7 +573,8 @@ class _MataKuliahTile extends StatelessWidget {
           ),
           IconButton(
             onPressed: onDelete,
-            icon: Icon(Icons.delete_outline_rounded, color: cs.onSurface.withOpacity(0.45), size: 20),
+            icon: Icon(Icons.delete_outline_rounded,
+                color: cs.onSurface.withOpacity(0.45), size: 20),
             tooltip: 'Hapus',
           ),
         ],
@@ -567,7 +624,8 @@ class _InfoTile extends StatelessWidget {
 
     return ListTile(
       dense: true,
-      shape: radius == null ? null : RoundedRectangleBorder(borderRadius: radius),
+      shape:
+          radius == null ? null : RoundedRectangleBorder(borderRadius: radius),
       leading: Container(
         width: 36,
         height: 36,
@@ -579,7 +637,8 @@ class _InfoTile extends StatelessWidget {
       ),
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
       trailing: showChevron
-          ? Icon(Icons.chevron_right_rounded, color: cs.onSurface.withOpacity(0.35))
+          ? Icon(Icons.chevron_right_rounded,
+              color: cs.onSurface.withOpacity(0.35))
           : Text(
               trailingText,
               style: TextStyle(

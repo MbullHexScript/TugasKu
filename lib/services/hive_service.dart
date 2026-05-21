@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/task_model.dart';
 import '../models/mata_kuliah_model.dart';
@@ -6,6 +8,10 @@ class HiveService {
   static const String _taskBoxName = 'tasks';
   static const String _mataKuliahBoxName = 'mata_kuliah';
   static const String _settingsBoxName = 'settings';
+
+  static const String _profileNameKey = 'profileName';
+  static const String _profileProgramKey = 'profileProgram';
+  static const String _profileSemesterKey = 'profileSemester';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -18,8 +24,10 @@ class HiveService {
     // Migrasi: hapus data lama yang di-seed otomatis (versi sebelumnya)
     // agar user bisa mulai fresh dengan mata kuliah sendiri
     final settings = Hive.box(_settingsBoxName);
-    final hadOldSeed = settings.get('seededMataKuliah', defaultValue: false) as bool;
-    final migratedClean = settings.get('migratedClean', defaultValue: false) as bool;
+    final hadOldSeed =
+        settings.get('seededMataKuliah', defaultValue: false) as bool;
+    final migratedClean =
+        settings.get('migratedClean', defaultValue: false) as bool;
     if (hadOldSeed && !migratedClean) {
       // Hapus semua data lama
       await Hive.box<Task>(_taskBoxName).clear();
@@ -41,7 +49,10 @@ class HiveService {
   static bool getIsFirstLaunch() {
     final box = Hive.box(_settingsBoxName);
     final isFirst = box.get('isFirstLaunch', defaultValue: true) as bool;
-    if (isFirst) box.put('isFirstLaunch', false);
+    if (isFirst) {
+      // Fire-and-forget: write ops are async but value is immediately available.
+      unawaited(box.put('isFirstLaunch', false));
+    }
     return isFirst;
   }
 
@@ -116,5 +127,30 @@ class HiveService {
     await getSettingsBox().delete('focusLastDayKey');
     await getSettingsBox().delete('seededMataKuliah');
     await getSettingsBox().delete('isFirstLaunch');
+    await getSettingsBox().delete(_profileNameKey);
+    await getSettingsBox().delete(_profileProgramKey);
+    await getSettingsBox().delete(_profileSemesterKey);
+  }
+
+  // ── Profile (Fresh Scholar) ────────────────────────────────────────────────
+  static String getProfileName() =>
+      getSettingsBox().get(_profileNameKey, defaultValue: 'Mahasiswa')
+          as String;
+
+  static String getProfileProgram() => getSettingsBox()
+      .get(_profileProgramKey, defaultValue: 'Teknik Informatika') as String;
+
+  static int getProfileSemester() =>
+      getSettingsBox().get(_profileSemesterKey, defaultValue: 5) as int;
+
+  static Future<void> setProfile({
+    required String name,
+    required String program,
+    required int semester,
+  }) async {
+    final box = getSettingsBox();
+    await box.put(_profileNameKey, name);
+    await box.put(_profileProgramKey, program);
+    await box.put(_profileSemesterKey, semester);
   }
 }

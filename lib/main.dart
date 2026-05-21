@@ -50,9 +50,24 @@ class TugasKuApp extends StatelessWidget {
   }
 
   ThemeData _buildLightTheme() {
-    const primary = Color(0xFF7C3AED);
-    const secondary = Color(0xFF0EA5E9);
-    const bgColor = Color(0xFFF4F3FF);
+    // Fresh Scholar (see DESIGN.md)
+    const primary = Color(0xFF004445); // Deep Teal
+    const secondary = Color(0xFF006C4B); // Vibrant Emerald
+    const bgColor = Color(0xFFF9F9FF);
+    const surfaceLowest = Color(0xFFFFFFFF);
+    const surfaceLow = Color(0xFFF0F3FF);
+    const surface = bgColor;
+    const surfaceHigh = Color(0xFFDEE8FF);
+    const surfaceHighest = Color(0xFFD8E3FB);
+    const onSurface = Color(0xFF111C2D);
+    const onSurfaceVariant = Color(0xFF3F4948);
+    const outline = Color(0xFF6F7979);
+    const outlineVariant = Color(0xFFBEC8C8);
+    const primaryContainer = Color(0xFF0D5D5E);
+    const onPrimaryContainer = Color(0xFF90D3D4);
+    const inverseSurface = Color(0xFF263143);
+    const onInverseSurface = Color(0xFFECF1FF);
+    const inversePrimary = Color(0xFF8FD2D3);
 
     return ThemeData(
       useMaterial3: true,
@@ -64,37 +79,39 @@ class TugasKuApp extends StatelessWidget {
         onSecondary: Colors.white,
         error: Color(0xFFDC2626),
         onError: Colors.white,
-        surface: Colors.white,
-        onSurface: Color(0xFF1E1040),
-        outline: Color(0xFFE2E8F0),
-        surfaceContainerHighest: bgColor,
-        inverseSurface: Color(0xFF1E1040),
-        onInverseSurface: Colors.white,
-        inversePrimary: Color(0xFFEDE9FE),
+        surface: surface,
+        onSurface: onSurface,
+        outline: outline,
+        outlineVariant: outlineVariant,
+        surfaceContainerLowest: surfaceLowest,
+        surfaceContainerLow: surfaceLow,
+        surfaceContainer: Color(0xFFE7EEFF),
+        surfaceContainerHigh: surfaceHigh,
+        surfaceContainerHighest: surfaceHighest,
+        surfaceDim: Color(0xFFCFDAF2),
+        surfaceBright: surfaceLowest,
+        inverseSurface: inverseSurface,
+        onInverseSurface: onInverseSurface,
+        inversePrimary: inversePrimary,
         shadow: Colors.black,
         scrim: Colors.black,
-        onSurfaceVariant: Color(0xFF4A4060),
-        outlineVariant: Color(0xFFD1C4E9),
-        primaryContainer: Color(0xFFEDE9FE),
-        onPrimaryContainer: Color(0xFF1E1040),
-        secondaryContainer: Color(0xFFE0F2FE),
-        onSecondaryContainer: Color(0xFF0C3547),
-        tertiaryContainer: Color(0xFFF3E8FF),
-        onTertiaryContainer: Color(0xFF2D1057),
-        tertiary: Color(0xFF9333EA),
+        onSurfaceVariant: onSurfaceVariant,
+        primaryContainer: primaryContainer,
+        onPrimaryContainer: onPrimaryContainer,
+        secondaryContainer: Color(0xFF64F9BC),
+        onSecondaryContainer: Color(0xFF00714E),
+        tertiaryContainer: Color(0xFF4A5654),
+        onTertiaryContainer: Color(0xFFBECBC8),
+        tertiary: Color(0xFF333F3D),
         onTertiary: Colors.white,
         errorContainer: Color(0xFFFFE4E6),
         onErrorContainer: Color(0xFF7F1D1D),
-        surfaceContainerLow: Color(0xFFF8F7FF),
-        surfaceContainer: bgColor,
-        surfaceDim: Color(0xFFE8E5F5),
-        surfaceBright: Colors.white,
       ),
       scaffoldBackgroundColor: bgColor,
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: surfaceLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: EdgeInsets.zero,
       ),
       appBarTheme: const AppBarTheme(
@@ -103,47 +120,53 @@ class TugasKuApp extends StatelessWidget {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: Color(0xFF1E1040),
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          color: onSurface,
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
         ),
-        iconTheme: IconThemeData(color: Color(0xFF7C3AED)),
+        iconTheme: IconThemeData(color: primary),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: surfaceLow,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: outlineVariant),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: secondary, width: 1.6),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.white,
-        elevation: 8,
-        shadowColor: primary.withOpacity(0.1),
-        indicatorColor: primary.withOpacity(0.12),
+        backgroundColor: surfaceLowest,
+        elevation: 0,
+        indicatorColor: primary.withOpacity(0.10),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Color(0xFF7C3AED),
+        backgroundColor: primary,
         foregroundColor: Colors.white,
         shape: StadiumBorder(),
       ),
+      dividerTheme: DividerThemeData(color: outlineVariant.withOpacity(0.6)),
     );
   }
 
   ThemeData _buildDarkTheme() {
-    const primary = Color(0xFFA78BFA);
-    const secondary = Color(0xFF38BDF8);
+    const primary = Color(0xFF8FD2D3);
+    const secondary = Color(0xFF64F9BC);
     const bgDark = Color(0xFF0F0D13);
     const surfaceDark = Color(0xFF1C1826);
     const cardDark = Color(0xFF231F32);
@@ -159,23 +182,23 @@ class TugasKuApp extends StatelessWidget {
         error: Color(0xFFDC2626),
         onError: Colors.white,
         surface: surfaceDark,
-        onSurface: Color(0xFFDDD6FE),
-        outline: Color(0xFF3D3550),
+        onSurface: Color(0xFFECF1FF),
+        outline: Color(0xFF3D4A4A),
         surfaceContainerHighest: cardDark,
         inverseSurface: Color(0xFFEDE9FE),
         onInverseSurface: Color(0xFF1E1040),
-        inversePrimary: Color(0xFF7C3AED),
+        inversePrimary: Color(0xFF004445),
         shadow: Colors.black,
         scrim: Colors.black,
-        onSurfaceVariant: Color(0xFF9CA3AF),
-        outlineVariant: Color(0xFF3D3550),
-        primaryContainer: Color(0xFF3D1A78),
-        onPrimaryContainer: Color(0xFFEDE9FE),
-        secondaryContainer: Color(0xFF0C3547),
-        onSecondaryContainer: Color(0xFFE0F2FE),
-        tertiaryContainer: Color(0xFF2D1057),
-        onTertiaryContainer: Color(0xFFF3E8FF),
-        tertiary: Color(0xFFC084FC),
+        onSurfaceVariant: Color(0xFF9FB1B1),
+        outlineVariant: Color(0xFF2B3434),
+        primaryContainer: Color(0xFF0D5D5E),
+        onPrimaryContainer: Color(0xFFAAEFEF),
+        secondaryContainer: Color(0xFF005137),
+        onSecondaryContainer: Color(0xFF68FCBF),
+        tertiaryContainer: Color(0xFF2A3432),
+        onTertiaryContainer: Color(0xFFD8E5E2),
+        tertiary: Color(0xFFBECBC8),
         onTertiary: bgDark,
         errorContainer: Color(0xFF7F1D1D),
         onErrorContainer: Color(0xFFFFE4E6),
@@ -188,7 +211,7 @@ class TugasKuApp extends StatelessWidget {
       cardTheme: CardThemeData(
         elevation: 0,
         color: cardDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: EdgeInsets.zero,
       ),
       appBarTheme: AppBarTheme(
@@ -197,30 +220,34 @@ class TugasKuApp extends StatelessWidget {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: const TextStyle(
-          color: Color(0xFFEDE9FE),
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          color: Color(0xFFECF1FF),
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
         ),
-        iconTheme: const IconThemeData(color: Color(0xFFA78BFA)),
+        iconTheme: const IconThemeData(color: primary),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceDark,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3D3550)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF2B3434)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3D3550)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF2B3434)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: secondary, width: 1.6),
         ),
         labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: cardDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0xFF150F20),
@@ -230,9 +257,9 @@ class TugasKuApp extends StatelessWidget {
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: Color(0xFF2D2640)),
+      dividerTheme: const DividerThemeData(color: Color(0xFF2B3434)),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Color(0xFFA78BFA),
+        backgroundColor: primary,
         foregroundColor: Color(0xFF0F0D13),
         shape: StadiumBorder(),
       ),

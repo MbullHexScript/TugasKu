@@ -8,6 +8,7 @@ import 'statistics_screen.dart';
 import 'settings_screen.dart';
 import 'focus_session_screen.dart';
 import 'task_detail_screen.dart';
+import 'edit_profile_screen.dart';
 
 // ─────────────────────────────── Root Shell ──────────────────────────────────
 
@@ -24,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _navItems = [
     _NavItem(Icons.home_outlined, Icons.home_rounded, 'HOME'),
     _NavItem(Icons.list_alt_outlined, Icons.list_alt_rounded, 'TASKS'),
-    _NavItem(Icons.calendar_month_outlined, Icons.calendar_month_rounded, 'CALENDAR'),
+    _NavItem(Icons.calendar_month_outlined, Icons.calendar_month_rounded,
+        'CALENDAR'),
     _NavItem(Icons.bar_chart_outlined, Icons.bar_chart_rounded, 'STATS'),
     _NavItem(Icons.settings_outlined, Icons.settings_rounded, 'SETTINGS'),
   ];
@@ -52,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(index: _tabIndex, children: halaman),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF150F20) : Colors.white,
+          color: isDark ? const Color(0xFF150F20) : cs.surfaceContainerLowest,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
@@ -74,11 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: selected
                         ? BoxDecoration(
                             color: cs.primary.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(18),
                           )
                         : null,
                     child: Column(
@@ -96,9 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           item.label,
                           style: TextStyle(
                             fontSize: 9,
-                            fontWeight: selected
-                                ? FontWeight.w800
-                                : FontWeight.w500,
+                            fontWeight:
+                                selected ? FontWeight.w800 : FontWeight.w500,
                             color: selected
                                 ? cs.primary
                                 : cs.onSurface.withOpacity(0.4),
@@ -151,12 +153,6 @@ class _DashboardTab extends StatelessWidget {
     return 'Istirahat sebentar,\nlanjut besok!';
   }
 
-  static String formatJam(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m WIB';
-  }
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -169,17 +165,14 @@ class _DashboardTab extends StatelessWidget {
         final motivasi = _motivasi(jam);
 
         return Scaffold(
-          backgroundColor:
-              isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
               // ── AppBar ──
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor: isDark
-                    ? const Color(0xFF0F0D13)
-                    : const Color(0xFFF4F3FF),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -187,9 +180,6 @@ class _DashboardTab extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Icon(Icons.menu_rounded,
-                          color: cs.primary, size: 26),
-                      const SizedBox(width: 12),
                       Text(
                         'TugasKu',
                         style: TextStyle(
@@ -219,11 +209,18 @@ class _DashboardTab extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(width: 12),
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: cs.primary.withOpacity(0.15),
-                        child: Icon(Icons.person_rounded,
-                            size: 18, color: cs.primary),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const EditProfileScreen()),
+                        ),
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: cs.primary.withOpacity(0.12),
+                          child: Icon(Icons.person_rounded,
+                              size: 18, color: cs.primary),
+                        ),
                       ),
                     ],
                   ),
@@ -239,10 +236,24 @@ class _DashboardTab extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1E1535)
-                            : const Color(0xFFEEEBFF),
-                        borderRadius: BorderRadius.circular(20),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDark
+                              ? [
+                                  cs.primary.withOpacity(0.22),
+                                  cs.secondary.withOpacity(0.16),
+                                ]
+                              : [
+                                  cs.primary.withOpacity(0.10),
+                                  cs.secondary.withOpacity(0.10),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: cs.outlineVariant
+                              .withOpacity(isDark ? 0.25 : 0.60),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,9 +270,7 @@ class _DashboardTab extends StatelessWidget {
                           Text(
                             motivasi,
                             style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFEDE9FE)
-                                  : const Color(0xFF1E1040),
+                              color: cs.onSurface,
                               fontWeight: FontWeight.w800,
                               fontSize: 26,
                               height: 1.25,
@@ -287,7 +296,7 @@ class _DashboardTab extends StatelessWidget {
                           label: 'SELESAI',
                           nilai: provider.jumlahSelesai,
                           ikon: Icons.check_circle_outline_rounded,
-                          iconColor: const Color(0xFF059669),
+                          iconColor: const Color(0xFF006C4B),
                         ),
                         const SizedBox(width: 10),
                         _StatCard(
@@ -306,16 +315,13 @@ class _DashboardTab extends StatelessWidget {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF1C1826)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                            ? cs.surfaceContainerHighest
+                            : cs.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: cs.outlineVariant
+                              .withOpacity(isDark ? 0.20 : 0.55),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,9 +336,7 @@ class _DashboardTab extends StatelessWidget {
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 15,
-                                      color: isDark
-                                          ? const Color(0xFFEDE9FE)
-                                          : const Color(0xFF1E1040),
+                                      color: cs.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -374,10 +378,9 @@ class _DashboardTab extends StatelessWidget {
                             child: LinearProgressIndicator(
                               value: provider.progressPenyelesaian,
                               minHeight: 9,
-                              backgroundColor:
-                                  cs.primary.withOpacity(0.10),
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  cs.primary),
+                              backgroundColor: cs.primary.withOpacity(0.10),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(cs.primary),
                             ),
                           ),
                         ],
@@ -394,9 +397,7 @@ class _DashboardTab extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 17,
-                            color: isDark
-                                ? const Color(0xFFEDE9FE)
-                                : const Color(0xFF1E1040),
+                            color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -436,7 +437,7 @@ class _DashboardTab extends StatelessWidget {
                     if (provider.tugasHariIni.isEmpty)
                       _EmptyHint(
                         pesan: 'Tidak ada deadline hari ini 🎉',
-                        warna: const Color(0xFF059669),
+                        warna: const Color(0xFF006C4B),
                       )
                     else
                       ...provider.tugasHariIni.map((t) => Padding(
@@ -465,11 +466,11 @@ class _DashboardTab extends StatelessWidget {
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                             colors: [
-                              Color(0xFF7C3AED),
-                              Color(0xFF6D28D9),
+                              Color(0xFF004445),
+                              Color(0xFF0D5D5E),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                         ),
                         child: Row(
                           children: [
@@ -523,7 +524,7 @@ class _DashboardTab extends StatelessWidget {
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(Icons.add,
-                                        size: 14, color: Color(0xFF7C3AED)),
+                                        size: 14, color: Color(0xFF004445)),
                                   ),
                                 ),
                               ],
@@ -560,20 +561,18 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1826) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          color:
+              isDark ? cs.surfaceContainerHighest : cs.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+          ),
         ),
         child: Column(
           children: [
@@ -616,9 +615,9 @@ class _TugasHariIniCard extends StatelessWidget {
       case 'tinggi':
         return const Color(0xFFDC2626);
       case 'sedang':
-        return const Color(0xFF7C3AED);
+        return const Color(0xFF004445);
       default:
-        return const Color(0xFF059669);
+        return const Color(0xFF006C4B);
     }
   }
 
@@ -676,9 +675,7 @@ class _TugasHariIniCard extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: isDark
-                            ? const Color(0xFFEDE9FE)
-                            : const Color(0xFF1E1040),
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 3),

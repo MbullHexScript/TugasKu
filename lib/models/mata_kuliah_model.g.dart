@@ -23,15 +23,20 @@ class MataKuliahAdapter extends TypeAdapter<MataKuliah> {
   void write(BinaryWriter writer, MataKuliah obj) {
     writer
       ..writeByte(3)
-      ..writeByte(0)..write(obj.id)
-      ..writeByte(1)..write(obj.nama)
-      ..writeByte(2)..write(obj.warna);
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.nama)
+      ..writeByte(2)
+      ..write(obj.warna);
   }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MataKuliahAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
+      other is MataKuliahAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 
   @override
   int get hashCode => typeId.hashCode;

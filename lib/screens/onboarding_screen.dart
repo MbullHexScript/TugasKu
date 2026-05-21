@@ -21,12 +21,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardPageData(
       isLogo: false,
       title: 'Atur Deadline',
-      subtitle: 'Tambah tugas, atur prioritas, dan pantau jadwal dengan kalender.',
+      subtitle:
+          'Tambah tugas, atur prioritas, dan pantau jadwal dengan kalender.',
     ),
     _OnboardPageData(
       isLogo: false,
       title: 'Pantau Performa',
-      subtitle: 'Lihat statistik penyelesaian dan fokus harianmu secara ringkas.',
+      subtitle:
+          'Lihat statistik penyelesaian dan fokus harianmu secara ringkas.',
     ),
   ];
 
@@ -75,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            'assets/images/splash_background.jpg',
+            'assets/images/screen.png',
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) => Container(
               decoration: const BoxDecoration(
@@ -83,15 +85,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFF4F3FF),
-                    Color(0xFFEDE9FE),
-                    Color(0xFFDDD6FE),
+                    Color(0xFFF9F9FF),
+                    Color(0xFFF0F3FF),
+                    Color(0xFFD8E3FB),
                   ],
                 ),
               ),
             ),
           ),
-          Container(color: Colors.white.withOpacity(0.62)),
+          Container(color: Colors.white.withOpacity(0.68)),
           SafeArea(
             child: Column(
               children: [
@@ -100,7 +102,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     controller: _controller,
                     onPageChanged: (i) => setState(() => _index = i),
                     itemCount: _pages.length,
-                    itemBuilder: (_, i) => _OnboardPage(page: _pages[i], color: cs.primary),
+                    itemBuilder: (_, i) =>
+                        _OnboardPage(page: _pages[i], color: cs.primary),
                   ),
                 ),
                 Padding(
@@ -117,7 +120,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             width: selected ? 34 : 10,
                             height: 10,
                             decoration: BoxDecoration(
-                              color: selected ? cs.primary : const Color(0xFFD1D5DB),
+                              color: selected
+                                  ? cs.primary
+                                  : const Color(0xFFD1D5DB),
                               borderRadius: BorderRadius.circular(999),
                             ),
                           );
@@ -140,7 +145,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                _index < _pages.length - 1 ? 'Next Step' : 'Mulai',
+                                _index < _pages.length - 1
+                                    ? 'Next Step'
+                                    : 'Mulai',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w800,
@@ -148,7 +155,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white),
                             ],
                           ),
                         ),
@@ -160,8 +168,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: OutlinedButton(
                           onPressed: _index == 0 ? null : _back,
                           style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            side: const BorderSide(color: Color(0xFFD1D5DB), width: 1.5),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            side: const BorderSide(
+                                color: Color(0xFFD1D5DB), width: 1.5),
                           ),
                           child: const Text(
                             'Back',
@@ -205,8 +215,9 @@ class _OnboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const titleColor = Color(0xFF111827);
-    const subtitleColor = Color(0xFF4A4060);
+    final cs = Theme.of(context).colorScheme;
+    final titleColor = cs.onSurface;
+    final subtitleColor = cs.onSurfaceVariant.withOpacity(0.85);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(26, 20, 26, 20),
@@ -235,7 +246,7 @@ class _OnboardPage extends StatelessWidget {
                       border: Border.all(color: titleColor, width: 3),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.notes_rounded, color: titleColor),
+                    child: Icon(Icons.notes_rounded, color: titleColor),
                   ),
                 ],
               ),
@@ -267,7 +278,7 @@ class _OnboardPage extends StatelessWidget {
               Text(
                 page.title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   color: titleColor,

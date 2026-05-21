@@ -101,8 +101,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -110,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
           FadeTransition(
             opacity: _fadeAnim,
             child: Image.asset(
-              'assets/images/splash_background.jpg',
+              'assets/images/screen.png',
               fit: BoxFit.cover,
               // Fallback: if image not found, show gradient background
               errorBuilder: (context, error, stackTrace) => Container(
@@ -119,9 +120,9 @@ class _SplashScreenState extends State<SplashScreen>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFFF4F3FF),
-                      Color(0xFFEDE9FE),
-                      Color(0xFFDDD6FE),
+                      Color(0xFFF9F9FF),
+                      Color(0xFFF0F3FF),
+                      Color(0xFFD8E3FB),
                     ],
                   ),
                 ),
@@ -152,11 +153,11 @@ class _SplashScreenState extends State<SplashScreen>
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF7C3AED),
+                          color: cs.primary,
                           borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF7C3AED).withOpacity(0.4),
+                              color: cs.primary.withOpacity(0.24),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
@@ -173,14 +174,14 @@ class _SplashScreenState extends State<SplashScreen>
                       // App name
                       RichText(
                         textAlign: TextAlign.center,
-                        text: const TextSpan(
+                        text: TextSpan(
                           children: [
                             TextSpan(
                               text: 'TUGAS',
                               style: TextStyle(
                                 fontSize: 42,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1E1040),
+                                color: cs.onSurface,
                                 letterSpacing: 2,
                               ),
                             ),
@@ -189,7 +190,7 @@ class _SplashScreenState extends State<SplashScreen>
                               style: TextStyle(
                                 fontSize: 42,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1E1040),
+                                color: cs.onSurface,
                                 letterSpacing: 2,
                               ),
                             ),
@@ -207,13 +208,13 @@ class _SplashScreenState extends State<SplashScreen>
                   position: _slideAnim,
                   child: FadeTransition(
                     opacity: _taglineFadeAnim,
-                    child: const Text(
+                    child: Text(
                       'Kelola Deadline, Kendalikan Waktu.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF4A4060),
+                        color: cs.onSurfaceVariant.withOpacity(0.85),
                         letterSpacing: 0.3,
                         height: 1.5,
                       ),
@@ -234,13 +235,13 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 children: [
                   // Animated dots loader
-                  _DotsLoader(color: const Color(0xFF7C3AED)),
+                  _DotsLoader(color: cs.primary),
                   const SizedBox(height: 16),
                   Text(
                     'v1.0.0',
                     style: TextStyle(
                       fontSize: 12,
-                      color: const Color(0xFF4A4060).withOpacity(0.6),
+                      color: cs.onSurfaceVariant.withOpacity(0.65),
                       letterSpacing: 1,
                     ),
                   ),

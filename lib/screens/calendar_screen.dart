@@ -89,10 +89,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
             : <Task>[];
 
         return Scaffold(
-          backgroundColor:
-              isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
               final ok = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(builder: (_) => const TaskFormScreen()),
@@ -100,7 +100,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               if (!mounted) return;
               if (ok == true) {
                 provider.reload();
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   const SnackBar(content: Text('Tugas berhasil disimpan')),
                 );
               }
@@ -114,8 +114,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor:
-                    isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -123,8 +122,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Icon(Icons.menu_rounded, color: cs.primary, size: 26),
-                      const SizedBox(width: 14),
                       Text(
                         'Kalender Deadline',
                         style: TextStyle(
@@ -134,24 +131,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                       ),
                       const Spacer(),
-                      Stack(
-                        children: [
-                          Icon(Icons.notifications_outlined,
-                              color: cs.primary, size: 26),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFDC2626),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      Icon(Icons.notifications_outlined,
+                          color: cs.primary, size: 26),
                     ],
                   ),
                 ),
@@ -166,16 +147,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF1C1826)
-                            : const Color(0xFFF1F0FF),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                            ? cs.surfaceContainerHighest
+                            : cs.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: cs.outlineVariant
+                              .withOpacity(isDark ? 0.20 : 0.55),
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -195,9 +173,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w800,
-                                    color: isDark
-                                        ? const Color(0xFFEDE9FE)
-                                        : const Color(0xFF1E1040),
+                                    color: cs.onSurface,
                                   ),
                                 ),
                               ),
@@ -254,9 +230,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
-                            color: isDark
-                                ? const Color(0xFFEDE9FE)
-                                : const Color(0xFF1E1040),
+                            color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -265,10 +239,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF2D2640)
-                                  : const Color(0xFFEDE9FE),
+                              color:
+                                  cs.primary.withOpacity(isDark ? 0.18 : 0.10),
                               borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: cs.outlineVariant
+                                    .withOpacity(isDark ? 0.20 : 0.55),
+                              ),
                             ),
                             child: Text(
                               '${tasksOnSelected.length} Tugas',
@@ -443,9 +420,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 ? Colors.white
                                 : col == 6
                                     ? const Color(0xFFDC2626)
-                                    : isDark
-                                        ? const Color(0xFFDDD6FE)
-                                        : const Color(0xFF1E1040),
+                                    : cs.onSurface,
                           ),
                         ),
                         if (hasTasks)
@@ -505,8 +480,11 @@ class _NavBtn extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2D2640) : const Color(0xFFF0EEFF),
-          borderRadius: BorderRadius.circular(10),
+          color: isDark ? cs.surfaceContainerHigh : cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+          ),
         ),
         child: Icon(icon, color: cs.onSurface.withOpacity(0.7), size: 22),
       ),
@@ -559,15 +537,15 @@ class _CalendarTaskTile extends StatelessWidget {
       {required this.task, required this.onTap, required this.formatJam});
 
   Color _barColor() {
-    if (task.isSelesai) return const Color(0xFF059669);
+    if (task.isSelesai) return const Color(0xFF006C4B);
     if (task.isTerlambat) return const Color(0xFFDC2626);
     switch (task.prioritas) {
       case 'tinggi':
         return const Color(0xFFDC2626);
       case 'sedang':
-        return const Color(0xFF7C3AED);
+        return const Color(0xFF004445);
       default:
-        return const Color(0xFF0EA5E9);
+        return const Color(0xFF006C4B);
     }
   }
 
@@ -587,9 +565,9 @@ class _CalendarTaskTile extends StatelessWidget {
       case 'tinggi':
         return const Color(0xFFFFE4E6);
       case 'sedang':
-        return const Color(0xFFEDE9FE);
+        return const Color(0xFFE7EEFF);
       default:
-        return const Color(0xFFE0F2FE);
+        return const Color(0xFFE8FFF3);
     }
   }
 
@@ -598,9 +576,9 @@ class _CalendarTaskTile extends StatelessWidget {
       case 'tinggi':
         return const Color(0xFFDC2626);
       case 'sedang':
-        return const Color(0xFF7C3AED);
+        return const Color(0xFF004445);
       default:
-        return const Color(0xFF0284C7);
+        return const Color(0xFF006C4B);
     }
   }
 
@@ -614,15 +592,12 @@ class _CalendarTaskTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1826) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          color:
+              isDark ? cs.surfaceContainerHighest : cs.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,9 +668,7 @@ class _CalendarTaskTile extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: isDark
-                            ? const Color(0xFFEDE9FE)
-                            : const Color(0xFF1E1040),
+                        color: cs.onSurface,
                         decoration:
                             task.isSelesai ? TextDecoration.lineThrough : null,
                       ),

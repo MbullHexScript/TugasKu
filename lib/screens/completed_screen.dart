@@ -33,8 +33,8 @@ class CompletedScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: const Color(0xFF059669).withOpacity(0.2)),
+                border:
+                    Border.all(color: const Color(0xFF059669).withOpacity(0.2)),
               ),
               child: Row(
                 children: [
@@ -75,8 +75,7 @@ class CompletedScreen extends StatelessWidget {
                   ),
                   PopupMenuButton(
                     icon: Icon(Icons.more_vert_rounded,
-                        size: 20,
-                        color: cs.onSurface.withOpacity(0.4)),
+                        size: 20, color: cs.onSurface.withOpacity(0.4)),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     itemBuilder: (_) => [
@@ -94,8 +93,7 @@ class CompletedScreen extends StatelessWidget {
                           Icon(Icons.delete_outline_rounded,
                               size: 18, color: Colors.red),
                           SizedBox(width: 8),
-                          Text('Hapus',
-                              style: TextStyle(color: Colors.red)),
+                          Text('Hapus', style: TextStyle(color: Colors.red)),
                         ]),
                       ),
                     ],

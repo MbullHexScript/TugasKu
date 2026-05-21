@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tugasku/widgets/empty_state.dart';
 
 void main() {
-  testWidgets('EmptyState shows title and subtitle', (WidgetTester tester) async {
+  testWidgets('EmptyState shows title and subtitle',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: EmptyState(
@@ -15,6 +16,7 @@ void main() {
     );
 
     expect(find.text('Tidak ada data'), findsOneWidget);
-    expect(find.text('Silakan tambahkan item terlebih dahulu.'), findsOneWidget);
+    expect(
+        find.text('Silakan tambahkan item terlebih dahulu.'), findsOneWidget);
   });
 }

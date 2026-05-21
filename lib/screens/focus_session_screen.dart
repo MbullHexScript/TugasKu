@@ -6,7 +6,8 @@ import '../providers/focus_provider.dart';
 
 class FocusSessionScreen extends StatefulWidget {
   final Duration duration;
-  const FocusSessionScreen({super.key, this.duration = const Duration(minutes: 25)});
+  const FocusSessionScreen(
+      {super.key, this.duration = const Duration(minutes: 25)});
 
   @override
   State<FocusSessionScreen> createState() => _FocusSessionScreenState();
@@ -76,7 +77,8 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
       builder: (ctx) {
         final cs = Theme.of(ctx).colorScheme;
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(auto ? 'Sesi fokus selesai!' : 'Sesi fokus disimpan'),
           content: Text(
             minutes <= 0
@@ -105,7 +107,7 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
         : 1 - (_remaining.inSeconds / _initial.inSeconds);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -133,12 +135,12 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF7C3AED), Color(0xFF5B21B6)],
+                  colors: [Color(0xFF004445), Color(0xFF0D5D5E)],
                 ),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF7C3AED).withOpacity(0.25),
+                    color: const Color(0xFF004445).withOpacity(0.18),
                     blurRadius: 24,
                     offset: const Offset(0, 10),
                   ),
@@ -187,7 +189,7 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
                           style: TextStyle(
                             fontSize: 44,
                             fontWeight: FontWeight.w900,
-                            color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                            color: cs.onSurface,
                             letterSpacing: 1,
                           ),
                         ),
@@ -209,12 +211,15 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: _remaining == _initial && !_running ? null : _reset,
+                    onPressed:
+                        _remaining == _initial && !_running ? null : _reset,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w700)),
+                    child: const Text('Reset',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -222,7 +227,11 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
                   flex: 2,
                   child: ElevatedButton.icon(
                     onPressed: _running ? _pause : _start,
-                    icon: Icon(_running ? Icons.pause_rounded : Icons.play_arrow_rounded, color: Colors.white),
+                    icon: Icon(
+                        _running
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        color: Colors.white),
                     label: Text(
                       _running ? 'Pause' : 'Mulai',
                       style: const TextStyle(
@@ -234,7 +243,8 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
                   ),
@@ -246,7 +256,9 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
               width: double.infinity,
               child: TextButton(
                 onPressed: () => _finish(auto: false),
-                child: Text('Selesai & Simpan', style: TextStyle(color: cs.primary, fontWeight: FontWeight.w800)),
+                child: Text('Selesai & Simpan',
+                    style: TextStyle(
+                        color: cs.primary, fontWeight: FontWeight.w800)),
               ),
             ),
           ],

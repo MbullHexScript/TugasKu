@@ -14,7 +14,6 @@ class StatisticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Consumer3<TaskProvider, MataKuliahProvider, FocusProvider>(
       builder: (context, taskProv, mkProv, focusProv, _) {
@@ -26,14 +25,13 @@ class StatisticsScreen extends StatelessWidget {
         final streak = focusProv.streakDays;
 
         return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor:
-                    isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -41,8 +39,6 @@ class StatisticsScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Icon(Icons.menu_rounded, color: cs.primary, size: 26),
-                      const SizedBox(width: 14),
                       Text(
                         'Statistik',
                         style: TextStyle(
@@ -52,23 +48,8 @@ class StatisticsScreen extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Stack(
-                        children: [
-                          Icon(Icons.notifications_outlined, color: cs.primary, size: 26),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFDC2626),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      Icon(Icons.notifications_outlined,
+                          color: cs.primary, size: 26),
                     ],
                   ),
                 ),
@@ -85,7 +66,7 @@ class StatisticsScreen extends StatelessWidget {
                               value: taskProv.jumlahSelesai,
                               label: 'SELESAI',
                               icon: Icons.check_circle_rounded,
-                              color: const Color(0xFF7C3AED),
+                              color: cs.secondary,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -94,7 +75,7 @@ class StatisticsScreen extends StatelessWidget {
                               value: sedangJalan,
                               label: 'SEDANG JALAN',
                               icon: Icons.timer_rounded,
-                              color: const Color(0xFF0EA5E9),
+                              color: cs.primary,
                             ),
                           ),
                         ],
@@ -107,7 +88,7 @@ class StatisticsScreen extends StatelessWidget {
                               value: totalJam,
                               label: 'TOTAL JAM',
                               icon: Icons.history_rounded,
-                              color: const Color(0xFFEA580C),
+                              color: cs.tertiary,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -122,14 +103,13 @@ class StatisticsScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 18),
-
                       _SectionCard(
                         title: 'Laju Penyelesaian',
                         subtitle: 'Performa mingguan Anda',
-                        child: _CompletionRing(progress: taskProv.progressPenyelesaian),
+                        child: _CompletionRing(
+                            progress: taskProv.progressPenyelesaian),
                       ),
                       const SizedBox(height: 14),
-
                       _SectionCard(
                         title: 'Distribusi Materi',
                         subtitle: 'Berdasarkan kategori tugas',
@@ -139,7 +119,6 @@ class StatisticsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-
                       _SectionCard(
                         title: 'Tingkat Prioritas',
                         subtitle: null,
@@ -206,7 +185,7 @@ class _MetricCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w900,
-              color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 4),
@@ -230,7 +209,8 @@ class _SectionCard extends StatelessWidget {
   final String? subtitle;
   final Widget child;
 
-  const _SectionCard({required this.title, required this.subtitle, required this.child});
+  const _SectionCard(
+      {required this.title, required this.subtitle, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -240,15 +220,11 @@ class _SectionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1826) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: isDark ? cs.surfaceContainerHighest : cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +234,7 @@ class _SectionCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+              color: cs.onSurface,
             ),
           ),
           if (subtitle != null) ...[
@@ -298,7 +274,8 @@ class _CompletionRing extends StatelessWidget {
             painter: _CircularProgressPainter(
               progress: progress.clamp(0.0, 1.0),
               color: cs.primary,
-              backgroundColor: isDark ? const Color(0xFF2D2640) : const Color(0xFFEDE9FE),
+              backgroundColor:
+                  cs.outlineVariant.withOpacity(isDark ? 0.35 : 0.55),
             ),
             child: Center(
               child: Column(
@@ -309,7 +286,7 @@ class _CompletionRing extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
-                      color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                      color: cs.onSurface,
                     ),
                   ),
                   Text(
@@ -334,7 +311,7 @@ class _CompletionRing extends StatelessWidget {
             const SizedBox(width: 26),
             _LegendDot(
               label: 'Tersisa',
-              color: isDark ? const Color(0xFF2D2640) : const Color(0xFFEDE9FE),
+              color: cs.outlineVariant.withOpacity(isDark ? 0.35 : 0.55),
             ),
           ],
         ),
@@ -354,7 +331,10 @@ class _LegendDot extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 8),
         Text(
           label,
@@ -379,9 +359,7 @@ class _DistributionDonut extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final entries = data.entries
-        .where((e) => e.key.trim().isNotEmpty)
-        .toList()
+    final entries = data.entries.where((e) => e.key.trim().isNotEmpty).toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
     final total = entries.fold<int>(0, (sum, e) => sum + e.value);
@@ -410,7 +388,7 @@ class _DistributionDonut extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
-                      color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                      color: cs.onSurface,
                     ),
                   ),
                   Text(
@@ -436,7 +414,8 @@ class _DistributionDonut extends StatelessWidget {
             for (int i = 0; i < entries.length; i++)
               _DistChip(
                 label: entries[i].key,
-                percent: total == 0 ? 0 : ((entries[i].value / total) * 100).round(),
+                percent:
+                    total == 0 ? 0 : ((entries[i].value / total) * 100).round(),
                 color: colors[i],
                 isDark: isDark,
               ),
@@ -457,7 +436,11 @@ class _DistChip extends StatelessWidget {
   final int percent;
   final Color color;
   final bool isDark;
-  const _DistChip({required this.label, required this.percent, required this.color, required this.isDark});
+  const _DistChip(
+      {required this.label,
+      required this.percent,
+      required this.color,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -494,8 +477,8 @@ class _PriorityBars extends StatelessWidget {
 
     final rows = [
       _PriorityRowData('Sangat Penting', tinggi, const Color(0xFFDC2626)),
-      _PriorityRowData('Sedang', sedang, const Color(0xFFEA580C)),
-      _PriorityRowData('Rendah', rendah, const Color(0xFF0EA5E9)),
+      _PriorityRowData('Sedang', sedang, const Color(0xFF3F4948)),
+      _PriorityRowData('Rendah', rendah, const Color(0xFF006C4B)),
     ];
 
     return Column(
@@ -503,7 +486,11 @@ class _PriorityBars extends StatelessWidget {
         for (final row in rows) ...[
           Row(
             children: [
-              Container(width: 7, height: 7, decoration: BoxDecoration(color: row.color, shape: BoxShape.circle)),
+              Container(
+                  width: 7,
+                  height: 7,
+                  decoration:
+                      BoxDecoration(color: row.color, shape: BoxShape.circle)),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(

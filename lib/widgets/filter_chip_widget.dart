@@ -21,8 +21,7 @@ class FilterChipWidget extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? cs.primary : cs.surface,
           borderRadius: BorderRadius.circular(20),
@@ -44,8 +43,7 @@ class FilterChipWidget extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected ? cs.onPrimary : cs.onSurface,
-            fontWeight:
-                isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             fontSize: 13,
           ),
         ),

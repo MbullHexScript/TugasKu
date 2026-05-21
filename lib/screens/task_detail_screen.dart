@@ -69,16 +69,25 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       SnackBar(
         content: const Text('Detail tugas disalin ke clipboard!'),
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
   String _formatDeadline(DateTime dt) {
     const bulan = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des'
     ];
     return '${dt.day} ${bulan[dt.month - 1]} ${dt.year}, '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
@@ -146,8 +155,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final pct = (task.progressSubtask * 100).round();
 
     return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -173,8 +181,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             icon: Icon(Icons.edit_outlined, color: cs.primary, size: 22),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => TaskFormScreen(task: task)),
+              MaterialPageRoute(builder: (_) => TaskFormScreen(task: task)),
             ),
           ),
           const SizedBox(width: 4),
@@ -190,9 +197,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF7C3AED), Color(0xFF5B21B6)],
+                colors: [Color(0xFF004445), Color(0xFF0D5D5E)],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,9 +340,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: isDark
-                        ? const Color(0xFFEDE9FE)
-                        : const Color(0xFF1E1040),
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -362,8 +367,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   value: task.progressSubtask,
                   minHeight: 8,
                   backgroundColor: cs.primary.withOpacity(0.12),
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(cs.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                 ),
               ),
             ),
@@ -409,34 +413,27 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ? task.subtasksDone[i]
                           : false;
                       return GestureDetector(
-                        onLongPress: () =>
-                            _hapusSubtask(provider, i),
+                        onLongPress: () => _hapusSubtask(provider, i),
                         child: Padding(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 5),
+                          padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Row(
                             children: [
                               GestureDetector(
-                                onTap: () =>
-                                    provider.toggleSubtask(task, i),
+                                onTap: () => provider.toggleSubtask(task, i),
                                 child: AnimatedContainer(
-                                  duration:
-                                      const Duration(milliseconds: 200),
+                                  duration: const Duration(milliseconds: 200),
                                   width: 24,
                                   height: 24,
                                   decoration: BoxDecoration(
-                                    color: done
-                                        ? cs.primary
-                                        : Colors.transparent,
+                                    color:
+                                        done ? cs.primary : Colors.transparent,
                                     border: Border.all(
                                       color: done
                                           ? cs.primary
-                                          : cs.onSurface
-                                              .withOpacity(0.3),
+                                          : cs.onSurface.withOpacity(0.3),
                                       width: 1.8,
                                     ),
-                                    borderRadius:
-                                        BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: done
                                       ? const Icon(Icons.check_rounded,
@@ -452,9 +449,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                     fontSize: 14,
                                     color: done
                                         ? cs.onSurface.withOpacity(0.4)
-                                        : isDark
-                                            ? const Color(0xFFEDE9FE)
-                                            : const Color(0xFF1E1040),
+                                        : cs.onSurface,
                                     decoration: done
                                         ? TextDecoration.lineThrough
                                         : null,
@@ -487,10 +482,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               'Tambahkan detail atau instruksi dosen di sini...',
                           filled: true,
                           fillColor: isDark
-                              ? const Color(0xFF2D2640)
-                              : const Color(0xFFF0EEFF),
+                              ? cs.surfaceContainerHigh
+                              : cs.surfaceContainerLow,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           contentPadding: const EdgeInsets.all(14),
@@ -515,16 +510,19 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ],
                   )
                 : GestureDetector(
-                    onTap: () =>
-                        setState(() => _editingCatatan = true),
+                    onTap: () => setState(() => _editingCatatan = true),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF2D2640)
-                            : const Color(0xFFF0EEFF),
+                            ? cs.surfaceContainerHigh
+                            : cs.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: cs.outlineVariant
+                              .withOpacity(isDark ? 0.20 : 0.55),
+                        ),
                       ),
                       child: Text(
                         task.catatan.isEmpty
@@ -533,9 +531,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         style: TextStyle(
                           color: task.catatan.isEmpty
                               ? cs.onSurface.withOpacity(0.35)
-                              : isDark
-                                  ? const Color(0xFFEDE9FE)
-                                  : const Color(0xFF1E1040),
+                              : cs.onSurface,
                           fontSize: 13,
                           height: 1.5,
                         ),
@@ -552,9 +548,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(
             16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
-        color: isDark
-            ? const Color(0xFF0F0D13)
-            : const Color(0xFFF4F3FF),
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: task.isSelesai
             ? OutlinedButton.icon(
                 onPressed: () async {
@@ -575,8 +569,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   await provider.tandaiSelesai(task);
                   if (mounted) Navigator.pop(context);
                 },
-                icon: const Icon(Icons.check_circle_rounded,
-                    color: Colors.white),
+                icon:
+                    const Icon(Icons.check_circle_rounded, color: Colors.white),
                 label: const Text(
                   'Tandai Selesai',
                   style: TextStyle(
@@ -602,10 +596,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF1C1826)
-              : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF1C1826)
+          : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -629,8 +622,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Ubah Status',
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 16),
               for (final entry in {
@@ -675,20 +667,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor:
-          Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF1C1826)
-              : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF1C1826)
+          : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) {
         return Padding(
           padding: EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              20 + MediaQuery.of(context).viewInsets.bottom),
+              20, 16, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,8 +694,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Tambah Subtask',
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -720,8 +707,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 onSubmitted: (_) {
                   _tambahSubtask(provider);
@@ -766,8 +753,7 @@ class _DetailCard extends StatelessWidget {
   final Widget child;
   final Widget? trailing;
 
-  const _DetailCard(
-      {required this.label, required this.child, this.trailing});
+  const _DetailCard({required this.label, required this.child, this.trailing});
 
   @override
   Widget build(BuildContext context) {

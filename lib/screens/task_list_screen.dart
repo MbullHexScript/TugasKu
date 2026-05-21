@@ -84,8 +84,7 @@ class _TaskListScreenState extends State<TaskListScreen>
             .toList();
 
         return Scaffold(
-          backgroundColor:
-              isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
               // Simpan referensi sebelum async gap
@@ -116,8 +115,7 @@ class _TaskListScreenState extends State<TaskListScreen>
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor:
-                    isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
@@ -130,12 +128,13 @@ class _TaskListScreenState extends State<TaskListScreen>
                           decoration: InputDecoration(
                             hintText: 'Cari tugas...',
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
                             ),
                             filled: true,
-                            fillColor:
-                                isDark ? const Color(0xFF1C1826) : Colors.white,
+                            fillColor: isDark
+                                ? cs.surfaceContainerHighest
+                                : cs.surfaceContainerLow,
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
@@ -157,9 +156,6 @@ class _TaskListScreenState extends State<TaskListScreen>
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Row(
                           children: [
-                            Icon(Icons.menu_rounded,
-                                color: cs.primary, size: 26),
-                            const SizedBox(width: 14),
                             Text(
                               'Daftar Tugas',
                               style: TextStyle(
@@ -213,11 +209,11 @@ class _TaskListScreenState extends State<TaskListScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text('Aktif'),
-                               const SizedBox(width: 6),
-                               _TabBadge(
-                                   // Pakai semuaTugasAktif.length agar sinkron dengan list
-                                   count: taskProv.semuaTugasAktif.length,
-                                   color: cs.primary),
+                              const SizedBox(width: 6),
+                              _TabBadge(
+                                  // Pakai semuaTugasAktif.length agar sinkron dengan list
+                                  count: taskProv.semuaTugasAktif.length,
+                                  color: cs.primary),
                             ],
                           ),
                         ),
@@ -229,7 +225,7 @@ class _TaskListScreenState extends State<TaskListScreen>
                               const SizedBox(width: 6),
                               _TabBadge(
                                   count: taskProv.jumlahSelesai,
-                                  color: const Color(0xFF059669)),
+                                  color: cs.secondary),
                             ],
                           ),
                         ),
@@ -435,14 +431,13 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Text(
       label,
       style: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w800,
-        color: color ??
-            (isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040)),
+        color: color ?? cs.onSurface,
       ),
     );
   }
@@ -564,9 +559,9 @@ class _TaskListCard extends StatelessWidget {
   Color get _statusColor {
     switch (task.status) {
       case 'proses':
-        return const Color(0xFF0EA5E9);
+        return const Color(0xFF004445);
       case 'selesai':
-        return const Color(0xFF059669);
+        return const Color(0xFF006C4B);
       default:
         return const Color(0xFF9CA3AF);
     }
@@ -588,9 +583,9 @@ class _TaskListCard extends StatelessWidget {
       case 'tinggi':
         return const Color(0xFFDC2626);
       case 'sedang':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFF3F4948);
       default:
-        return const Color(0xFF059669);
+        return const Color(0xFF006C4B);
     }
   }
 
@@ -603,12 +598,13 @@ class _TaskListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dismissible(
       key: Key('task_${task.id}'),
-      background: _slideAction(const Color(0xFF059669), Icons.check_rounded,
-          Alignment.centerLeft, 'Selesai'),
+      background: _slideAction(
+          cs.secondary, Icons.check_rounded, Alignment.centerLeft, 'Selesai'),
       secondaryBackground: _slideAction(const Color(0xFFDC2626),
           Icons.delete_rounded, Alignment.centerRight, 'Hapus'),
       confirmDismiss: (dir) async {
@@ -625,15 +621,12 @@ class _TaskListCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1826) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            color:
+                isDark ? cs.surfaceContainerHighest : cs.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+            ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -666,9 +659,7 @@ class _TaskListCard extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
-                                color: isDark
-                                    ? const Color(0xFFEDE9FE)
-                                    : const Color(0xFF1E1040),
+                                color: cs.onSurface,
                               ),
                             ),
                           ),

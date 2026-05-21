@@ -161,8 +161,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     // Tampilkan pesan jika belum ada mata kuliah
     if (!isEditMode && mkProvider.namaMataKuliah.isEmpty) {
       return Scaffold(
-        backgroundColor:
-            isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           leading: IconButton(
@@ -191,7 +190,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     color: cs.primary.withOpacity(0.10),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.menu_book_rounded, color: cs.primary, size: 40),
+                  child: Icon(Icons.menu_book_rounded,
+                      color: cs.primary, size: 40),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -200,7 +200,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -223,15 +223,19 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     );
                   },
-                  icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 18),
+                  icon: const Icon(Icons.settings_rounded,
+                      color: Colors.white, size: 18),
                   label: const Text(
                     'Buka Pengaturan',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w800),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: cs.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
                 ),
@@ -246,13 +250,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     // (sudah dihandle di didChangeDependencies, ini sebagai fallback)
     if (_mataKuliah.isEmpty && mkProvider.namaMataKuliah.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _mataKuliah = mkProvider.namaMataKuliah.first);
+        if (mounted)
+          setState(() => _mataKuliah = mkProvider.namaMataKuliah.first);
       });
     }
 
     return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0F0D13) : const Color(0xFFF4F3FF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -294,8 +298,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
-                color:
-                    isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+                color: cs.onSurface,
                 height: 1.2,
               ),
             ),
@@ -311,10 +314,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 hintText: 'Masukkan nama tugas...',
                 hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
                 filled: true,
-                fillColor:
-                    isDark ? const Color(0xFF1C1826) : const Color(0xFFEEEBFF),
+                fillColor: isDark
+                    ? cs.surfaceContainerHighest
+                    : cs.surfaceContainerLow,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding:
@@ -336,10 +340,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               decoration: InputDecoration(
                 hintText: 'Pilih mata kuliah',
                 filled: true,
-                fillColor:
-                    isDark ? const Color(0xFF1C1826) : const Color(0xFFEEEBFF),
+                fillColor: isDark
+                    ? cs.surfaceContainerHighest
+                    : cs.surfaceContainerLow,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding:
@@ -361,15 +366,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1C1826) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                color: isDark
+                    ? cs.surfaceContainerHighest
+                    : cs.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,9 +382,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      color: isDark
-                          ? const Color(0xFFEDE9FE)
-                          : const Color(0xFF1E1040),
+                      color: cs.onSurface,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -401,9 +402,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                                   color: _prioritas == p
                                       ? cs.primary
                                       : isDark
-                                          ? const Color(0xFF2D2640)
-                                          : const Color(0xFFF0EEFF),
-                                  borderRadius: BorderRadius.circular(12),
+                                          ? cs.surfaceContainerHigh
+                                          : cs.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: cs.outlineVariant
+                                        .withOpacity(isDark ? 0.18 : 0.60),
+                                  ),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -433,15 +438,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1C1826) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                color: isDark
+                    ? cs.surfaceContainerHighest
+                    : cs.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+                ),
               ),
               child: Row(
                 children: [
@@ -475,9 +478,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
-                            color: isDark
-                                ? const Color(0xFFEDE9FE)
-                                : const Color(0xFF1E1040),
+                            color: cs.onSurface,
                           ),
                         ),
                       ],
@@ -502,10 +503,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               value: _status,
               decoration: InputDecoration(
                 filled: true,
-                fillColor:
-                    isDark ? const Color(0xFF1C1826) : const Color(0xFFEEEBFF),
+                fillColor: isDark
+                    ? cs.surfaceContainerHighest
+                    : cs.surfaceContainerLow,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding:
@@ -599,13 +601,13 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Text(
       text,
       style: TextStyle(
         fontWeight: FontWeight.w700,
         fontSize: 14,
-        color: isDark ? const Color(0xFFEDE9FE) : const Color(0xFF1E1040),
+        color: cs.onSurface,
       ),
     );
   }

@@ -10,9 +10,9 @@ class PriorityBadge extends StatelessWidget {
       case 'tinggi':
         return const Color(0xFFDC2626);
       case 'sedang':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFF3F4948);
       case 'rendah':
-        return const Color(0xFF059669);
+        return const Color(0xFF006C4B);
       default:
         return Colors.grey;
     }
@@ -21,13 +21,13 @@ class PriorityBadge extends StatelessWidget {
   String get _label {
     switch (prioritas) {
       case 'tinggi':
-        return '🔴 Tinggi';
+        return 'TINGGI';
       case 'sedang':
-        return '🟡 Sedang';
+        return 'SEDANG';
       case 'rendah':
-        return '🟢 Rendah';
+        return 'RENDAH';
       default:
-        return prioritas;
+        return prioritas.toUpperCase();
     }
   }
 
@@ -36,16 +36,17 @@ class PriorityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _color.withOpacity(0.3)),
+        color: _color.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _color.withOpacity(0.22)),
       ),
       child: Text(
         _label,
         style: TextStyle(
           color: _color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.6,
         ),
       ),
     );

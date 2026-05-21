@@ -170,8 +170,7 @@ class TaskCard extends StatelessWidget {
                                 child: LinearProgressIndicator(
                                   value: task.progressSubtask,
                                   minHeight: 4,
-                                  backgroundColor:
-                                      cs.outline.withOpacity(0.15),
+                                  backgroundColor: cs.outline.withOpacity(0.15),
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       warnaMatKul),
                                 ),
@@ -182,7 +181,7 @@ class TaskCard extends StatelessWidget {
                               '${task.jumlahSubtaskSelesai}/${task.subtasks.length}',
                               style: TextStyle(
                                   fontSize: 10,
-                                  color: cs.onBackground.withOpacity(0.4),
+                                  color: cs.onSurface.withOpacity(0.45),
                                   fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -227,8 +226,7 @@ class TaskCard extends StatelessWidget {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Hapus Tugas?'),
         content: Text(
             'Yakin ingin menghapus "${task.namaTugas}"? Kamu bisa membatalkan via notifikasi.'),
@@ -254,9 +252,9 @@ class _StatusPill extends StatelessWidget {
   Color get _color {
     switch (status) {
       case 'selesai':
-        return const Color(0xFF059669);
+        return const Color(0xFF006C4B);
       case 'proses':
-        return const Color(0xFF0EA5E9);
+        return const Color(0xFF004445);
       default:
         return const Color(0xFF9CA3AF);
     }
@@ -283,8 +281,8 @@ class _StatusPill extends StatelessWidget {
       ),
       child: Text(
         _label,
-        style: TextStyle(
-            fontSize: 11, color: _color, fontWeight: FontWeight.w700),
+        style:
+            TextStyle(fontSize: 11, color: _color, fontWeight: FontWeight.w700),
       ),
     );
   }

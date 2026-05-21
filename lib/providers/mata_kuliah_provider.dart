@@ -7,8 +7,15 @@ class MataKuliahProvider extends ChangeNotifier {
 
   // Palet warna default untuk mata kuliah baru
   static const List<int> warnaDefault = [
-    0xFF6750A4, 0xFF1565C0, 0xFF2E7D32, 0xFFC62828,
-    0xFFE65100, 0xFF00838F, 0xFF6A1B9A, 0xFF4A148C,
+    // Fresh Scholar-friendly hues (teal/emerald first, then supportive accents)
+    0xFF004445, // Deep Teal
+    0xFF006C4B, // Emerald
+    0xFF1F6869, // Surface Tint Teal
+    0xFF0D5D5E, // Teal Container
+    0xFF0F766E, // Teal
+    0xFF0E7490, // Blue-teal
+    0xFF1D4ED8, // Indigo-blue (accent)
+    0xFFEA580C, // Amber (accent)
   ];
 
   MataKuliahProvider() {
@@ -16,7 +23,8 @@ class MataKuliahProvider extends ChangeNotifier {
   }
 
   List<MataKuliah> get daftarMataKuliah => _daftarMataKuliah;
-  List<String> get namaMataKuliah => _daftarMataKuliah.map((m) => m.nama).toList();
+  List<String> get namaMataKuliah =>
+      _daftarMataKuliah.map((m) => m.nama).toList();
 
   int getWarna(String nama) {
     final mk = _daftarMataKuliah.firstWhere(
@@ -35,7 +43,8 @@ class MataKuliahProvider extends ChangeNotifier {
 
   Future<void> tambahMataKuliah(String nama) async {
     // Cek apakah nama sudah ada
-    if (_daftarMataKuliah.any((m) => m.nama.toLowerCase() == nama.toLowerCase())) {
+    if (_daftarMataKuliah
+        .any((m) => m.nama.toLowerCase() == nama.toLowerCase())) {
       return;
     }
     final box = HiveService.getMataKuliahBox();
