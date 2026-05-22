@@ -51,7 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _tabIndex, children: halaman),
+      // IndexedStack menyebabkan semua tab aktif sekaligus → semua FAB
+      // ada di tree → duplicate Hero tag. Solusi: tampilkan hanya tab aktif.
+      body: halaman[_tabIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF150F20) : cs.surfaceContainerLowest,
@@ -166,6 +168,13 @@ class _DashboardTab extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          // heroTag unik agar tidak bentrok dengan FAB di tab lain
+          floatingActionButton: FloatingActionButton(
+            heroTag: 'fab_dashboard',
+            onPressed: onMulaiFokus,
+            backgroundColor: cs.primary,
+            child: const Icon(Icons.nightlight_round, color: Colors.white),
+          ),
           body: CustomScrollView(
             slivers: [
               // ── AppBar ──
@@ -497,37 +506,18 @@ class _DashboardTab extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.nightlight_round,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.add,
-                                        size: 14, color: Color(0xFF004445)),
-                                  ),
-                                ),
-                              ],
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.nightlight_round,
+                                color: Colors.white,
+                                size: 28,
+                              ),
                             ),
                           ],
                         ),
@@ -649,7 +639,6 @@ class _TugasHariIniCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // left color bar
             Container(
               width: 4,
               height: 72,

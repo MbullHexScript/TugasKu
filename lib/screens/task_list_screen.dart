@@ -86,6 +86,7 @@ class _TaskListScreenState extends State<TaskListScreen>
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           floatingActionButton: FloatingActionButton.extended(
+            heroTag: 'fab_tasklist',
             onPressed: () async {
               // Simpan referensi sebelum async gap
               final messenger = ScaffoldMessenger.of(context);

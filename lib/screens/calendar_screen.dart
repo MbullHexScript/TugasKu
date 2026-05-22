@@ -91,6 +91,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           floatingActionButton: FloatingActionButton(
+            heroTag: 'fab_calendar',
             onPressed: () async {
               final messenger = ScaffoldMessenger.of(context);
               final ok = await Navigator.push<bool>(

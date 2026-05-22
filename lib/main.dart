@@ -16,10 +16,12 @@ void main() async {
     statusBarIconBrightness: Brightness.dark,
   ));
 
+  // Hive wajib selesai dulu sebelum runApp
   await HiveService.init();
 
+  // Notifikasi NON-BLOCKING — tidak di-await agar runApp tidak tertahan
   final notificationService = NotificationService();
-  await notificationService.init();
+  notificationService.init();
 
   runApp(
     MultiProvider(
@@ -50,9 +52,8 @@ class TugasKuApp extends StatelessWidget {
   }
 
   ThemeData _buildLightTheme() {
-    // Fresh Scholar (see DESIGN.md)
-    const primary = Color(0xFF004445); // Deep Teal
-    const secondary = Color(0xFF006C4B); // Vibrant Emerald
+    const primary = Color(0xFF004445);
+    const secondary = Color(0xFF006C4B);
     const bgColor = Color(0xFFF9F9FF);
     const surfaceLowest = Color(0xFFFFFFFF);
     const surfaceLow = Color(0xFFF0F3FF);
