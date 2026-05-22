@@ -43,8 +43,6 @@ Pastikan tidak ada tanda ✗ pada output, terutama untuk Android toolchain.
 git clone https://github.com/MbullHexScript/TugasKu.git
 ```
 
-> Ganti `username` dengan username GitHub pemilik repository.
-
 **2. Masuk ke direktori project:**
 
 ```bash
