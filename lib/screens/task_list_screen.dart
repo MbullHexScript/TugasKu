@@ -629,140 +629,142 @@ class _TaskListCard extends StatelessWidget {
               color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
             ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left accent bar
-              Container(
-                width: 4,
-                decoration: BoxDecoration(
-                  color: warnaMatKul,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left accent bar
+                Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: warnaMatKul,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title + priority
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              task.namaTugas,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                                color: cs.onSurface,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Priority dot + label
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: _prioritasColor,
-                                  shape: BoxShape.circle,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title + priority
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                task.namaTugas,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  color: cs.onSurface,
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _prioritasLabel,
+                            ),
+                            const SizedBox(width: 8),
+                            // Priority dot + label
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: _prioritasColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _prioritasLabel,
+                                  style: TextStyle(
+                                    color: _prioritasColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // Mata kuliah with dot
+                        Row(
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: warnaMatKul,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              task.mataKuliah,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: warnaMatKul,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Status pill + deadline
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _statusColor.withOpacity(0.10),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _statusLabel,
                                 style: TextStyle(
-                                  color: _prioritasColor,
+                                  color: _statusColor,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.3,
+                                  letterSpacing: 0.4,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      // Mata kuliah with dot
-                      Row(
-                        children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: warnaMatKul,
-                              shape: BoxShape.circle,
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            task.mataKuliah,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: warnaMatKul,
-                              fontWeight: FontWeight.w600,
+                            const Spacer(),
+                            Icon(
+                              task.sisaHari <= 0
+                                  ? Icons.error_outline_rounded
+                                  : Icons.calendar_today_outlined,
+                              size: 12,
+                              color: _deadlineColor,
                             ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Status pill + deadline
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _statusColor.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              _statusLabel,
+                            const SizedBox(width: 4),
+                            Text(
+                              _sisaLabel,
                               style: TextStyle(
-                                color: _statusColor,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.4,
+                                color: _deadlineColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          Icon(
-                            task.sisaHari <= 0
-                                ? Icons.error_outline_rounded
-                                : Icons.calendar_today_outlined,
-                            size: 12,
-                            color: _deadlineColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _sisaLabel,
-                            style: TextStyle(
-                              color: _deadlineColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
