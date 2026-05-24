@@ -190,7 +190,7 @@ class _DashboardTab extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        'TugasKu',
+                        'tugasku',
                         style: TextStyle(
                           color: cs.primary,
                           fontWeight: FontWeight.w900,
