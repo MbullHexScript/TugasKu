@@ -182,7 +182,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    for (final sem in const [5, 6, 7, 8]) ...[
+                    for (final sem in const [1, 2, 3, 4, 5, 6, 7, 8]) ...[
                       Expanded(
                         child: _SemesterChip(
                           value: sem,

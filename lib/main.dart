@@ -46,7 +46,7 @@ class TugasKuApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildLightTheme(),
       darkTheme: _buildDarkTheme(),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light, // ← selalu pakai tema putih
       home: const SplashScreen(),
     );
   }
@@ -166,102 +166,110 @@ class TugasKuApp extends StatelessWidget {
   }
 
   ThemeData _buildDarkTheme() {
-    const primary = Color(0xFF8FD2D3);
-    const secondary = Color(0xFF64F9BC);
-    const bgDark = Color(0xFF0F0D13);
-    const surfaceDark = Color(0xFF1C1826);
-    const cardDark = Color(0xFF231F32);
+    const primary = Color(0xFF004445);
+    const secondary = Color(0xFF006C4B);
+    const bgColor = Color(0xFFF9F9FF);
+    const surfaceLowest = Color(0xFFFFFFFF);
+    const surfaceLow = Color(0xFFF0F3FF);
+    const surfaceHigh = Color(0xFFDEE8FF);
+    const surfaceHighest = Color(0xFFD8E3FB);
+    const onSurface = Color(0xFF111C2D);
+    const onSurfaceVariant = Color(0xFF3F4948);
+    const outline = Color(0xFF6F7979);
+    const outlineVariant = Color(0xFFBEC8C8);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: const ColorScheme(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         primary: primary,
-        onPrimary: bgDark,
+        onPrimary: Colors.white,
         secondary: secondary,
-        onSecondary: bgDark,
+        onSecondary: Colors.white,
         error: Color(0xFFDC2626),
         onError: Colors.white,
-        surface: surfaceDark,
-        onSurface: Color(0xFFECF1FF),
-        outline: Color(0xFF3D4A4A),
-        surfaceContainerHighest: cardDark,
-        inverseSurface: Color(0xFFEDE9FE),
-        onInverseSurface: Color(0xFF1E1040),
-        inversePrimary: Color(0xFF004445),
+        surface: bgColor,
+        onSurface: onSurface,
+        outline: outline,
+        outlineVariant: outlineVariant,
+        surfaceContainerLowest: surfaceLowest,
+        surfaceContainerLow: surfaceLow,
+        surfaceContainer: Color(0xFFE7EEFF),
+        surfaceContainerHigh: surfaceHigh,
+        surfaceContainerHighest: surfaceHighest,
+        surfaceDim: Color(0xFFCFDAF2),
+        surfaceBright: surfaceLowest,
+        inverseSurface: Color(0xFF263143),
+        onInverseSurface: Color(0xFFECF1FF),
+        inversePrimary: Color(0xFF8FD2D3),
         shadow: Colors.black,
         scrim: Colors.black,
-        onSurfaceVariant: Color(0xFF9FB1B1),
-        outlineVariant: Color(0xFF2B3434),
+        onSurfaceVariant: onSurfaceVariant,
         primaryContainer: Color(0xFF0D5D5E),
-        onPrimaryContainer: Color(0xFFAAEFEF),
-        secondaryContainer: Color(0xFF005137),
-        onSecondaryContainer: Color(0xFF68FCBF),
-        tertiaryContainer: Color(0xFF2A3432),
-        onTertiaryContainer: Color(0xFFD8E5E2),
-        tertiary: Color(0xFFBECBC8),
-        onTertiary: bgDark,
-        errorContainer: Color(0xFF7F1D1D),
-        onErrorContainer: Color(0xFFFFE4E6),
-        surfaceContainerLow: Color(0xFF150F20),
-        surfaceContainer: surfaceDark,
-        surfaceDim: bgDark,
-        surfaceBright: cardDark,
+        onPrimaryContainer: Color(0xFF90D3D4),
+        secondaryContainer: Color(0xFF64F9BC),
+        onSecondaryContainer: Color(0xFF00714E),
+        tertiaryContainer: Color(0xFF4A5654),
+        onTertiaryContainer: Color(0xFFBECBC8),
+        tertiary: Color(0xFF333F3D),
+        onTertiary: Colors.white,
+        errorContainer: Color(0xFFFFE4E6),
+        onErrorContainer: Color(0xFF7F1D1D),
       ),
-      scaffoldBackgroundColor: bgDark,
+      scaffoldBackgroundColor: bgColor,
       cardTheme: CardThemeData(
         elevation: 0,
-        color: cardDark,
+        color: surfaceLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: EdgeInsets.zero,
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: const TextStyle(
-          color: Color(0xFFECF1FF),
+        titleTextStyle: TextStyle(
+          color: onSurface,
           fontSize: 22,
           fontWeight: FontWeight.w900,
         ),
-        iconTheme: const IconThemeData(color: primary),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        iconTheme: IconThemeData(color: primary),
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceDark,
+        fillColor: surfaceLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF2B3434)),
+          borderSide: const BorderSide(color: outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF2B3434)),
+          borderSide: const BorderSide(color: outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: secondary, width: 1.6),
         ),
-        labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-        hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+        labelStyle: const TextStyle(color: Color(0xFF3F4948)),
+        hintStyle: const TextStyle(color: Color(0xFF6F7979)),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: cardDark,
+        backgroundColor: surfaceLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xFF150F20),
+        backgroundColor: surfaceLowest,
         elevation: 0,
-        indicatorColor: primary.withOpacity(0.2),
+        indicatorColor: primary.withOpacity(0.10),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: Color(0xFF2B3434)),
+      dividerTheme: DividerThemeData(color: outlineVariant.withOpacity(0.6)),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primary,
-        foregroundColor: Color(0xFF0F0D13),
+        foregroundColor: Colors.white,
         shape: StadiumBorder(),
       ),
     );
