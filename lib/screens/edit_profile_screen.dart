@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../services/hive_service.dart';
 
@@ -16,12 +19,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late int _semester;
   bool _saving = false;
 
+  // ← TAMBAH: state foto profil
+  File? _selectedPhoto;
+  String? _savedPhotoPath;
+
   @override
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: HiveService.getProfileName());
     _programCtrl = TextEditingController(text: HiveService.getProfileProgram());
     _semester = HiveService.getProfileSemester();
+    _savedPhotoPath = HiveService.getProfilePhoto(); // ← load foto tersimpan
   }
 
   @override
@@ -29,6 +37,166 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameCtrl.dispose();
     _programCtrl.dispose();
     super.dispose();
+  }
+
+  // ← TAMBAH: method untuk memilih foto
+  Future<void> _pickPhoto() async {
+    final cs = Theme.of(context).colorScheme;
+
+    // Tampilkan pilihan: kamera atau galeri
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Pilih Sumber Foto',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: cs.onSurface,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.camera_alt_rounded,
+                    color: cs.primary, size: 22),
+              ),
+              title: const Text('Kamera',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: const Text('Ambil foto baru'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: cs.secondary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.photo_library_rounded,
+                    color: cs.secondary, size: 22),
+              ),
+              title: const Text('Galeri',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: const Text('Pilih dari galeri foto'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            if (_savedPhotoPath != null || _selectedPhoto != null) ...[
+              const Divider(),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.delete_outline_rounded,
+                      color: Colors.red, size: 22),
+                ),
+                title: const Text('Hapus Foto',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: Colors.red)),
+                onTap: () => Navigator.pop(ctx, null),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    // Jika user pilih hapus foto (tap di luar atau null)
+    if (!mounted) return;
+    if (source == null &&
+        (_savedPhotoPath != null || _selectedPhoto != null)) {
+      // Cek apakah bottom sheet di-dismiss atau user pilih hapus
+      // Kita handle di sini dengan dialog konfirmasi terpisah
+      return;
+    }
+    if (source == null) return;
+
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (image != null && mounted) {
+        setState(() {
+          _selectedPhoto = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memilih foto: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  // ← TAMBAH: method hapus foto
+  Future<void> _removePhoto() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Hapus Foto Profil?'),
+        content:
+            const Text('Foto profil kamu akan dihapus dan diganti ikon default.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal')),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style:
+                FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true && mounted) {
+      setState(() {
+        _selectedPhoto = null;
+        _savedPhotoPath = null;
+      });
+      await HiveService.setProfilePhoto('');
+    }
   }
 
   Future<void> _save() async {
@@ -40,6 +208,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _saving = true);
     try {
+      // Simpan foto jika ada yang baru dipilih
+      if (_selectedPhoto != null) {
+        await HiveService.setProfilePhoto(_selectedPhoto!.path);
+      }
+
       await HiveService.setProfile(
         name: _nameCtrl.text.trim(),
         program: _programCtrl.text.trim(),
@@ -51,10 +224,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  // ← TAMBAH: helper untuk mendapatkan foto yang ditampilkan
+  File? get _displayPhoto {
+    if (_selectedPhoto != null) return _selectedPhoto;
+    if (_savedPhotoPath != null && _savedPhotoPath!.isNotEmpty) {
+      return File(_savedPhotoPath!);
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final photo = _displayPhoto;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -90,57 +273,114 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Center(
                   child: Column(
                     children: [
-                      Stack(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: cs.primary.withOpacity(0.20),
-                                width: 3,
-                              ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 52,
-                              backgroundColor: cs.primary.withOpacity(0.10),
-                              child: Icon(Icons.person_rounded,
-                                  color: cs.primary, size: 54),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 6,
-                            right: 6,
-                            child: Container(
-                              width: 42,
-                              height: 42,
+                      GestureDetector(
+                        onTap: _pickPhoto, // ← TAP UNTUK PILIH FOTO
+                        child: Stack(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: cs.primary,
                                 shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.10),
-                                    blurRadius: 14,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
+                                border: Border.all(
+                                  color: cs.primary.withOpacity(0.20),
+                                  width: 3,
+                                ),
                               ),
-                              child: const Icon(Icons.edit_rounded,
-                                  color: Colors.white, size: 20),
+                              child: CircleAvatar(
+                                radius: 52,
+                                backgroundColor:
+                                    cs.primary.withOpacity(0.10),
+                                // ← TAMPILKAN FOTO JIKA ADA
+                                backgroundImage: photo != null
+                                    ? FileImage(photo)
+                                    : null,
+                                child: photo == null
+                                    ? Icon(Icons.person_rounded,
+                                        color: cs.primary, size: 54)
+                                    : null,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'UNGGAH FOTO BARU',
-                        style: TextStyle(
-                          color: cs.secondary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.8,
-                          fontSize: 12,
+                            Positioned(
+                              bottom: 6,
+                              right: 6,
+                              child: GestureDetector(
+                                onTap: _pickPhoto, // ← TAP ICON EDIT
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: cs.primary,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withOpacity(0.10),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(Icons.edit_rounded,
+                                      color: Colors.white, size: 20),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      // ← TAMPILKAN TOMBOL SESUAI STATUS FOTO
+                      if (photo != null) ...[
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton.icon(
+                              onPressed: _pickPhoto,
+                              icon: Icon(Icons.edit_rounded,
+                                  size: 14, color: cs.secondary),
+                              label: Text(
+                                'GANTI FOTO',
+                                style: TextStyle(
+                                  color: cs.secondary,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.8,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton.icon(
+                              onPressed: _removePhoto,
+                              icon: const Icon(Icons.delete_outline_rounded,
+                                  size: 14, color: Colors.red),
+                              label: const Text(
+                                'HAPUS',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.8,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        TextButton.icon(
+                          onPressed: _pickPhoto,
+                          icon: Icon(Icons.camera_alt_rounded,
+                              size: 14, color: cs.secondary),
+                          label: Text(
+                            'UNGGAH FOTO',
+                            style: TextStyle(
+                              color: cs.secondary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.8,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -209,7 +449,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2),
                           )
                         : const Text(
                             'Simpan Perubahan',
@@ -224,8 +465,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 SizedBox(
                   height: 56,
                   child: FilledButton(
-                    onPressed:
-                        _saving ? null : () => Navigator.pop(context, false),
+                    onPressed: _saving
+                        ? null
+                        : () => Navigator.pop(context, false),
                     style: FilledButton.styleFrom(
                       backgroundColor: isDark
                           ? cs.surfaceContainerHigh
@@ -292,7 +534,9 @@ class _SemesterChip extends StatelessWidget {
         height: 52,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? cs.secondaryContainer : cs.surfaceContainerLowest,
+          color: selected
+              ? cs.secondaryContainer
+              : cs.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected
@@ -306,7 +550,8 @@ class _SemesterChip extends StatelessWidget {
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 16,
-            color: selected ? cs.onSecondaryContainer : cs.onSurface,
+            color:
+                selected ? cs.onSecondaryContainer : cs.onSurface,
           ),
         ),
       ),

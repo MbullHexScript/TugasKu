@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:io';
 
 import '../providers/focus_provider.dart';
 import '../providers/mata_kuliah_provider.dart';
@@ -87,13 +88,24 @@ class SettingsScreen extends StatelessWidget {
                                         width: 2,
                                       ),
                                     ),
-                                    child: CircleAvatar(
-                                      radius: 26,
-                                      backgroundColor:
-                                          cs.primary.withOpacity(0.12),
-                                      child: Icon(Icons.person_rounded,
-                                          color: cs.primary, size: 26),
-                                    ),
+                                    child: () {
+                                      final photoPath =
+                                          HiveService.getProfilePhoto();
+                                      final hasPhoto = photoPath != null &&
+                                          photoPath.isNotEmpty;
+                                      return CircleAvatar(
+                                        radius: 26,
+                                        backgroundColor:
+                                            cs.primary.withOpacity(0.12),
+                                        backgroundImage: hasPhoto
+                                            ? FileImage(File(photoPath))
+                                            : null,
+                                        child: hasPhoto
+                                            ? null
+                                            : Icon(Icons.person_rounded,
+                                                color: cs.primary, size: 26),
+                                      );
+                                    }(),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(

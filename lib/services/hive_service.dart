@@ -12,6 +12,7 @@ class HiveService {
   static const String _profileNameKey = 'profileName';
   static const String _profileProgramKey = 'profileProgram';
   static const String _profileSemesterKey = 'profileSemester';
+  static const String _profilePhotoKey = 'profilePhoto'; // ← TAMBAH
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -21,20 +22,16 @@ class HiveService {
     await Hive.openBox<MataKuliah>(_mataKuliahBoxName);
     await Hive.openBox(_settingsBoxName);
 
-    // Migrasi: hapus data lama yang di-seed otomatis (versi sebelumnya)
-    // agar user bisa mulai fresh dengan mata kuliah sendiri
     final settings = Hive.box(_settingsBoxName);
     final hadOldSeed =
         settings.get('seededMataKuliah', defaultValue: false) as bool;
     final migratedClean =
         settings.get('migratedClean', defaultValue: false) as bool;
     if (hadOldSeed && !migratedClean) {
-      // Hapus semua data lama
       await Hive.box<Task>(_taskBoxName).clear();
       await Hive.box<MataKuliah>(_mataKuliahBoxName).clear();
       await settings.put('seededMataKuliah', false);
       await settings.put('migratedClean', true);
-      // Jangan hapus isFirstLaunch supaya tidak tampil onboarding lagi
     }
   }
 
@@ -43,21 +40,18 @@ class HiveService {
       Hive.box<MataKuliah>(_mataKuliahBoxName);
   static Box getSettingsBox() => Hive.box(_settingsBoxName);
 
-  static int _dateKey(DateTime dt) => dt.year * 10000 + dt.month * 100 + dt.day;
+  static int _dateKey(DateTime dt) =>
+      dt.year * 10000 + dt.month * 100 + dt.day;
 
-  /// Returns true only on the very first app launch, then flips the flag.
   static bool getIsFirstLaunch() {
     final box = Hive.box(_settingsBoxName);
     final isFirst = box.get('isFirstLaunch', defaultValue: true) as bool;
     if (isFirst) {
-      // Fire-and-forget: write ops are async but value is immediately available.
       unawaited(box.put('isFirstLaunch', false));
     }
     return isFirst;
   }
 
-  /// Allocate an incrementing id (small int) so keys stay unique and
-  /// notification ids remain within safe bounds.
   static Future<int> allocateTaskId() async {
     final settings = getSettingsBox();
     int? next = settings.get('nextTaskId') as int?;
@@ -92,7 +86,6 @@ class HiveService {
   static Future<void> addFocusMinutes(int minutes) async {
     if (minutes <= 0) return;
     final settings = getSettingsBox();
-
     final total =
         (settings.get('focusTotalMinutes', defaultValue: 0) as int) + minutes;
     await settings.put('focusTotalMinutes', total);
@@ -105,7 +98,6 @@ class HiveService {
     var streak = settings.get('focusStreakDays', defaultValue: 0) as int;
 
     if (lastKey == todayKey) {
-      // already counted for today
     } else if (lastKey == yesterdayKey) {
       streak = streak <= 0 ? 1 : streak + 1;
     } else {
@@ -119,7 +111,6 @@ class HiveService {
   static Future<void> resetAllData() async {
     await getTaskBox().clear();
     await getMataKuliahBox().clear();
-    // Hapus semua settings kecuali migratedClean agar migrasi tidak jalan lagi
     await getSettingsBox().delete('nextTaskId');
     await getSettingsBox().delete('nextMataKuliahId');
     await getSettingsBox().delete('focusTotalMinutes');
@@ -130,9 +121,10 @@ class HiveService {
     await getSettingsBox().delete(_profileNameKey);
     await getSettingsBox().delete(_profileProgramKey);
     await getSettingsBox().delete(_profileSemesterKey);
+    await getSettingsBox().delete(_profilePhotoKey); // ← TAMBAH
   }
 
-  // ── Profile (Fresh Scholar) ────────────────────────────────────────────────
+  // ── Profile ────────────────────────────────────────────────────────────────
   static String getProfileName() =>
       getSettingsBox().get(_profileNameKey, defaultValue: 'Mahasiswa')
           as String;
@@ -142,6 +134,14 @@ class HiveService {
 
   static int getProfileSemester() =>
       getSettingsBox().get(_profileSemesterKey, defaultValue: 5) as int;
+
+  // ← TAMBAH: getter & setter foto profil
+  static String? getProfilePhoto() =>
+      getSettingsBox().get(_profilePhotoKey) as String?;
+
+  static Future<void> setProfilePhoto(String path) async {
+    await getSettingsBox().put(_profilePhotoKey, path);
+  }
 
   static Future<void> setProfile({
     required String name,
