@@ -329,7 +329,7 @@ class SettingsScreen extends StatelessWidget {
                         child: TextButton(
                           onPressed: () => _logout(context),
                           child: const Text(
-                            'Keluar Akun',
+                            'Hapus Akun',
                             style: TextStyle(
                               color: Color(0xFFDC2626),
                               fontWeight: FontWeight.w800,
