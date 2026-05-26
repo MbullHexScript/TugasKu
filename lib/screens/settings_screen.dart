@@ -311,7 +311,7 @@ class SettingsScreen extends StatelessWidget {
                             _InfoTile(
                               icon: Icons.info_outline_rounded,
                               label: 'Versi Aplikasi',
-                              trailingText: 'v1.2.0',
+                              trailingText: 'v1.2.1',
                               isFirst: true,
                             ),
                             _InfoDivider(),
