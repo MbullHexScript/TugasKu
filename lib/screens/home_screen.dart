@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import '../models/notification_log_model.dart';
 import '../providers/task_provider.dart';
 import '../models/task_model.dart';
+import '../services/hive_service.dart';
 import 'task_list_screen.dart';
 import 'calendar_screen.dart';
 import 'statistics_screen.dart';
@@ -9,6 +12,8 @@ import 'settings_screen.dart';
 import 'focus_session_screen.dart';
 import 'task_detail_screen.dart';
 import 'edit_profile_screen.dart';
+import 'notification_center_sheet.dart';
+import 'dart:io';
 
 // ─────────────────────────────── Root Shell ──────────────────────────────────
 
@@ -51,8 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      // IndexedStack menyebabkan semua tab aktif sekaligus → semua FAB
-      // ada di tree → duplicate Hero tag. Solusi: tampilkan hanya tab aktif.
       body: halaman[_tabIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -78,8 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
                     decoration: selected
                         ? BoxDecoration(
                             color: cs.primary.withOpacity(0.10),
@@ -101,8 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           item.label,
                           style: TextStyle(
                             fontSize: 9,
-                            fontWeight:
-                                selected ? FontWeight.w800 : FontWeight.w500,
+                            fontWeight: selected
+                                ? FontWeight.w800
+                                : FontWeight.w500,
                             color: selected
                                 ? cs.primary
                                 : cs.onSurface.withOpacity(0.4),
@@ -155,6 +159,15 @@ class _DashboardTab extends StatelessWidget {
     return 'Istirahat sebentar,\nlanjut besok!';
   }
 
+  void _bukaNotificationCenter(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const NotificationCenterSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -168,7 +181,6 @@ class _DashboardTab extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          // heroTag unik agar tidak bentrok dengan FAB di tab lain
           floatingActionButton: FloatingActionButton(
             heroTag: 'fab_dashboard',
             onPressed: onMulaiFokus,
@@ -199,36 +211,79 @@ class _DashboardTab extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Stack(
-                        children: [
-                          Icon(Icons.notifications_outlined,
-                              color: cs.primary, size: 26),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFDC2626),
-                                shape: BoxShape.circle,
-                              ),
+                      // ── Icon Notifikasi dengan Badge Dinamis ──
+                      ValueListenableBuilder<Box<NotificationLog>>(
+                        valueListenable:
+                            HiveService.getNotifLogBox().listenable(),
+                        builder: (context, box, _) {
+                          final now = DateTime.now();
+                          final adaBelumDibaca = box.values.any(
+                            (log) =>
+                                !log.sudahDibaca &&
+                                log.waktu.isBefore(now),
+                          );
+                          return GestureDetector(
+                            onTap: () =>
+                                _bukaNotificationCenter(context),
+                            child: Stack(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.notifications_outlined,
+                                    color: cs.primary,
+                                    size: 26,
+                                  ),
+                                ),
+                                if (adaBelumDibaca)
+                                  Positioned(
+                                    top: 2,
+                                    right: 2,
+                                    child: Container(
+                                      width: 9,
+                                      height: 9,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFDC2626),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const EditProfileScreen()),
+                              builder: (_) =>
+                                  const EditProfileScreen()),
                         ),
-                        child: CircleAvatar(
-                          radius: 16,
-                          backgroundColor: cs.primary.withOpacity(0.12),
-                          child: Icon(Icons.person_rounded,
-                              size: 18, color: cs.primary),
+                        child: ValueListenableBuilder(
+                          valueListenable:
+                              HiveService.getSettingsBox().listenable(
+                            keys: const ['profilePhoto'],
+                          ),
+                          builder: (context, _, __) {
+                            final photoPath =
+                                HiveService.getProfilePhoto();
+                            final hasPhoto = photoPath != null &&
+                                photoPath.isNotEmpty;
+                            return CircleAvatar(
+                              radius: 16,
+                              backgroundColor:
+                                  cs.primary.withOpacity(0.12),
+                              backgroundImage: hasPhoto
+                                  ? FileImage(File(photoPath))
+                                  : null,
+                              child: hasPhoto
+                                  ? null
+                                  : Icon(Icons.person_rounded,
+                                      size: 18, color: cs.primary),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -338,7 +393,8 @@ class _DashboardTab extends StatelessWidget {
                           Row(
                             children: [
                               Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'Progres Mingguan',
@@ -357,7 +413,8 @@ class _DashboardTab extends StatelessWidget {
                                             : 'Ayo mulai kerjakan!',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: cs.onSurface.withOpacity(0.5),
+                                      color:
+                                          cs.onSurface.withOpacity(0.5),
                                     ),
                                   ),
                                 ],
@@ -387,7 +444,8 @@ class _DashboardTab extends StatelessWidget {
                             child: LinearProgressIndicator(
                               value: provider.progressPenyelesaian,
                               minHeight: 9,
-                              backgroundColor: cs.primary.withOpacity(0.10),
+                              backgroundColor:
+                                  cs.primary.withOpacity(0.10),
                               valueColor:
                                   AlwaysStoppedAnimation<Color>(cs.primary),
                             ),
@@ -456,7 +514,8 @@ class _DashboardTab extends StatelessWidget {
                               onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => TaskDetailScreen(task: t),
+                                  builder: (_) =>
+                                      TaskDetailScreen(task: t),
                                 ),
                               ),
                             ),
@@ -485,7 +544,8 @@ class _DashboardTab extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: const [
                                   Text(
                                     'Mulai Sesi Fokus?',
@@ -582,7 +642,10 @@ class _StatCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withOpacity(0.5),
                 letterSpacing: 0.4,
               ),
             ),

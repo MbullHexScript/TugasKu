@@ -28,6 +28,7 @@ class StatisticsScreen extends StatelessWidget {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
+              // ── AppBar — tanpa icon notifikasi ──
               SliverAppBar(
                 pinned: false,
                 floating: true,
@@ -37,95 +38,86 @@ class StatisticsScreen extends StatelessWidget {
                 titleSpacing: 0,
                 title: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Statistik',
-                        style: TextStyle(
-                          color: cs.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.notifications_outlined,
-                          color: cs.primary, size: 26),
-                    ],
+                  child: Text(
+                    'Statistik',
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                 sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _MetricCard(
-                              value: taskProv.jumlahSelesai,
-                              label: 'SELESAI',
-                              icon: Icons.check_circle_rounded,
-                              color: cs.secondary,
-                            ),
+                  delegate: SliverChildListDelegate([
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            value: taskProv.jumlahSelesai,
+                            label: 'SELESAI',
+                            icon: Icons.check_circle_rounded,
+                            color: cs.secondary,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _MetricCard(
-                              value: sedangJalan,
-                              label: 'SEDANG JALAN',
-                              icon: Icons.timer_rounded,
-                              color: cs.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _MetricCard(
-                              value: totalJam,
-                              label: 'TOTAL JAM',
-                              icon: Icons.history_rounded,
-                              color: cs.tertiary,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _MetricCard(
-                              value: streak,
-                              label: 'STREAK HARI',
-                              icon: Icons.bolt_rounded,
-                              color: const Color(0xFFDC2626),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      _SectionCard(
-                        title: 'Laju Penyelesaian',
-                        subtitle: 'Performa mingguan Anda',
-                        child: _CompletionRing(
-                            progress: taskProv.progressPenyelesaian),
-                      ),
-                      const SizedBox(height: 14),
-                      _SectionCard(
-                        title: 'Distribusi Materi',
-                        subtitle: 'Berdasarkan kategori tugas',
-                        child: _DistributionDonut(
-                          data: taskProv.tugasPerMataKuliah,
-                          mkProv: mkProv,
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _MetricCard(
+                            value: sedangJalan,
+                            label: 'SEDANG JALAN',
+                            icon: Icons.timer_rounded,
+                            color: cs.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            value: totalJam,
+                            label: 'TOTAL JAM',
+                            icon: Icons.history_rounded,
+                            color: cs.tertiary,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _MetricCard(
+                            value: streak,
+                            label: 'STREAK HARI',
+                            icon: Icons.bolt_rounded,
+                            color: const Color(0xFFDC2626),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    _SectionCard(
+                      title: 'Laju Penyelesaian',
+                      subtitle: 'Performa mingguan Anda',
+                      child: _CompletionRing(
+                          progress: taskProv.progressPenyelesaian),
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionCard(
+                      title: 'Distribusi Materi',
+                      subtitle: 'Berdasarkan kategori tugas',
+                      child: _DistributionDonut(
+                        data: taskProv.tugasPerMataKuliah,
+                        mkProv: mkProv,
                       ),
-                      const SizedBox(height: 14),
-                      _SectionCard(
-                        title: 'Tingkat Prioritas',
-                        subtitle: null,
-                        child: _PriorityBars(tasks: taskProv.semuaTugas),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionCard(
+                      title: 'Tingkat Prioritas',
+                      subtitle: null,
+                      child: _PriorityBars(tasks: taskProv.semuaTugas),
+                    ),
+                  ]),
                 ),
               ),
             ],
@@ -411,14 +403,26 @@ class _DistributionDonut extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (int i = 0; i < entries.length; i++)
-              _DistChip(
-                label: entries[i].key,
-                percent:
-                    total == 0 ? 0 : ((entries[i].value / total) * 100).round(),
-                color: colors[i],
-                isDark: isDark,
-              ),
+            for (int i = 0; i < entries.length; i++) ...[
+              () {
+                final namaMk = entries[i].key;
+                // Fitur 3: tambah suffix "(Sem X)" jika lintas semester
+                final isLintas = mkProv.isLintasSemester(namaMk);
+                final semMk = mkProv.getSemester(namaMk);
+                final displayLabel = isLintas
+                    ? '$namaMk (Sem $semMk)'
+                    : namaMk;
+                final percent = total == 0
+                    ? 0
+                    : ((entries[i].value / total) * 100).round();
+                return _DistChip(
+                  label: displayLabel,
+                  percent: percent,
+                  color: colors[i],
+                  isDark: isDark,
+                );
+              }(),
+            ],
             if (entries.isEmpty)
               Text(
                 'Belum ada data tugas',
@@ -444,7 +448,7 @@ class _DistChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final short = label.length > 14 ? '${label.substring(0, 14)}…' : label;
+    final short = label.length > 18 ? '${label.substring(0, 18)}…' : label;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -489,8 +493,8 @@ class _PriorityBars extends StatelessWidget {
               Container(
                   width: 7,
                   height: 7,
-                  decoration:
-                      BoxDecoration(color: row.color, shape: BoxShape.circle)),
+                  decoration: BoxDecoration(
+                      color: row.color, shape: BoxShape.circle)),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -576,7 +580,8 @@ class _CircularProgressPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_CircularProgressPainter old) => old.progress != progress;
+  bool shouldRepaint(_CircularProgressPainter old) =>
+      old.progress != progress;
 }
 
 class _DonutChartPainter extends CustomPainter {
@@ -600,7 +605,8 @@ class _DonutChartPainter extends CustomPainter {
 
     for (int i = 0; i < values.length; i++) {
       final rawSweep = (values[i] / total) * (2 * math.pi);
-      final sweepAngle = math.max(0.0, rawSweep - (hasGap ? gapAngle : 0.0));
+      final sweepAngle =
+          math.max(0.0, rawSweep - (hasGap ? gapAngle : 0.0));
       final paint = Paint()
         ..color = colors[i % colors.length]
         ..style = PaintingStyle.stroke
@@ -608,7 +614,8 @@ class _DonutChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round;
 
       canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - strokeWidth / 2),
+        Rect.fromCircle(
+            center: center, radius: radius - strokeWidth / 2),
         startAngle,
         sweepAngle,
         false,

@@ -25,48 +25,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _prevMonth() => setState(() {
-        _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
+        _focusedMonth =
+            DateTime(_focusedMonth.year, _focusedMonth.month - 1);
       });
 
   void _nextMonth() => setState(() {
-        _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
+        _focusedMonth =
+            DateTime(_focusedMonth.year, _focusedMonth.month + 1);
       });
 
-  // Convert day-of-week header index -> label
-  static const _dayLabels = ['SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'];
+  static const _dayLabels = [
+    'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'
+  ];
 
   String _monthYearLabel(DateTime dt) {
     const bulan = [
-      'Januari',
-      'Februari',
-      'Maret',
-      'April',
-      'Mei',
-      'Juni',
-      'Juli',
-      'Agustus',
-      'September',
-      'Oktober',
-      'November',
-      'Desember'
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
     return '${bulan[dt.month - 1]} ${dt.year}';
   }
 
   String _bulanLabel(int month) {
     const bulan = [
-      'Januari',
-      'Februari',
-      'Maret',
-      'April',
-      'Mei',
-      'Juni',
-      'Juli',
-      'Agustus',
-      'September',
-      'Oktober',
-      'November',
-      'Desember'
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
     return bulan[month - 1];
   }
@@ -102,50 +85,49 @@ class _CalendarScreenState extends State<CalendarScreen> {
               if (ok == true) {
                 provider.reload();
                 messenger.showSnackBar(
-                  const SnackBar(content: Text('Tugas berhasil disimpan')),
+                  const SnackBar(
+                      content: Text('Tugas berhasil disimpan')),
                 );
               }
             },
             backgroundColor: cs.primary,
-            child: const Icon(Icons.add_rounded, color: Colors.white),
+            child:
+                const Icon(Icons.add_rounded, color: Colors.white),
           ),
           body: CustomScrollView(
             slivers: [
-              // ── AppBar ──────────────────────────────────────────────
+              // ── AppBar — tanpa icon notifikasi ──
               SliverAppBar(
                 pinned: false,
                 floating: true,
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                backgroundColor:
+                    Theme.of(context).scaffoldBackgroundColor,
                 elevation: 0,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
                 title: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Kalender Deadline',
-                        style: TextStyle(
-                          color: cs.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.notifications_outlined,
-                          color: cs.primary, size: 26),
-                    ],
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    'Kalender Deadline',
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
 
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                padding:
+                    const EdgeInsets.fromLTRB(16, 4, 16, 100),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // ── Calendar Card ────────────────────────────────
+                    // ── Calendar Card ──
                     Container(
-                      padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+                      padding:
+                          const EdgeInsets.fromLTRB(12, 16, 12, 16),
                       decoration: BoxDecoration(
                         color: isDark
                             ? cs.surfaceContainerHighest
@@ -158,7 +140,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                       child: Column(
                         children: [
-                          // Month Navigator
                           Row(
                             children: [
                               _NavBtn(
@@ -186,10 +167,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 16),
-
-                          // Day-of-week headers
                           Row(
                             children: List.generate(7, (i) {
                               final isSun = i == 6;
@@ -202,7 +180,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                       fontWeight: FontWeight.w800,
                                       color: isSun
                                           ? const Color(0xFFDC2626)
-                                          : cs.onSurface.withOpacity(0.45),
+                                          : cs.onSurface
+                                              .withOpacity(0.45),
                                       letterSpacing: 0.3,
                                     ),
                                   ),
@@ -210,10 +189,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               );
                             }),
                           ),
-
                           const SizedBox(height: 8),
-
-                          // Calendar Grid
                           _buildCalendarGrid(provider, cs, isDark),
                         ],
                       ),
@@ -221,7 +197,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                     const SizedBox(height: 20),
 
-                    // ── Selected day header ─────────────────────────
                     Row(
                       children: [
                         Text(
@@ -240,12 +215,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color:
-                                  cs.primary.withOpacity(isDark ? 0.18 : 0.10),
+                              color: cs.primary
+                                  .withOpacity(isDark ? 0.18 : 0.10),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: cs.outlineVariant
-                                    .withOpacity(isDark ? 0.20 : 0.55),
+                                color: cs.outlineVariant.withOpacity(
+                                    isDark ? 0.20 : 0.55),
                               ),
                             ),
                             child: Text(
@@ -262,11 +237,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                     const SizedBox(height: 12),
 
-                    // ── Task list ───────────────────────────────────
                     if (tasksOnSelected.isEmpty)
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 32),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 32),
                           child: Column(
                             children: [
                               Icon(
@@ -278,7 +253,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               Text(
                                 'Tidak ada tugas pada hari ini',
                                 style: TextStyle(
-                                  color: cs.onSurface.withOpacity(0.35),
+                                  color:
+                                      cs.onSurface.withOpacity(0.35),
                                   fontSize: 14,
                                 ),
                               ),
@@ -288,14 +264,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       )
                     else
                       ...tasksOnSelected.map((task) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
+                            padding:
+                                const EdgeInsets.only(bottom: 10),
                             child: _CalendarTaskTile(
                               task: task,
                               formatJam: _formatJam,
                               onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => TaskDetailScreen(task: task),
+                                  builder: (_) =>
+                                      TaskDetailScreen(task: task),
                                 ),
                               ),
                             ),
@@ -314,17 +292,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
       TaskProvider provider, ColorScheme cs, bool isDark) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-
     final firstDayOfMonth =
         DateTime(_focusedMonth.year, _focusedMonth.month, 1);
     final daysInMonth =
         DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
-
-    // How many days from prev month fill the first row (Mon = 0)
     final startOffset = (firstDayOfMonth.weekday - 1) % 7;
     final prevMonthDays =
         DateTime(_focusedMonth.year, _focusedMonth.month, 0).day;
-
     final totalCells = startOffset + daysInMonth;
     final rows = (totalCells / 7).ceil();
 
@@ -337,32 +311,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
               final cellIndex = row * 7 + col;
               final dayNum = cellIndex - startOffset + 1;
 
-              // Prev-month overflow
               if (dayNum < 1) {
-                final prevDay = prevMonthDays - (startOffset - cellIndex - 1);
+                final prevDay =
+                    prevMonthDays - (startOffset - cellIndex - 1);
                 return _CalendarCell(
-                  label: '$prevDay',
-                  isOverflow: true,
-                  isSunday: col == 6,
-                  cs: cs,
-                  isDark: isDark,
-                );
+                    label: '$prevDay',
+                    isOverflow: true,
+                    isSunday: col == 6,
+                    cs: cs,
+                    isDark: isDark);
               }
-
-              // Next-month overflow
               if (dayNum > daysInMonth) {
                 final nextDay = dayNum - daysInMonth;
                 return _CalendarCell(
-                  label: '$nextDay',
-                  isOverflow: true,
-                  isSunday: col == 6,
-                  cs: cs,
-                  isDark: isDark,
-                );
+                    label: '$nextDay',
+                    isOverflow: true,
+                    isSunday: col == 6,
+                    cs: cs,
+                    isDark: isDark);
               }
 
-              final date =
-                  DateTime(_focusedMonth.year, _focusedMonth.month, dayNum);
+              final date = DateTime(
+                  _focusedMonth.year, _focusedMonth.month, dayNum);
               final isToday = date == today;
               final isSelected = _selectedDay != null &&
                   date.year == _selectedDay!.year &&
@@ -371,7 +341,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
               final tasks = provider.tugasUntukTanggal(date);
               final hasTasks = tasks.isNotEmpty;
 
-              // Dot color based on task urgency
               Color dotColor = cs.primary;
               if (hasTasks) {
                 final hasTerlambat = tasks.any((t) => t.isTerlambat);
@@ -404,7 +373,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: isToday && !isSelected
-                          ? Border.all(color: cs.primary.withOpacity(0.5))
+                          ? Border.all(
+                              color: cs.primary.withOpacity(0.5))
                           : null,
                     ),
                     child: Column(
@@ -428,7 +398,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           Padding(
                             padding: const EdgeInsets.only(top: 3),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
                               children: [
                                 for (int d = 0;
                                     d < tasks.length.clamp(1, 3);
@@ -439,8 +410,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     margin: const EdgeInsets.symmetric(
                                         horizontal: 1),
                                     decoration: BoxDecoration(
-                                      color:
-                                          isSelected ? Colors.white : dotColor,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : dotColor,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -459,8 +431,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 }
-
-// ── Nav Button ─────────────────────────────────────────────────────────────────
 
 class _NavBtn extends StatelessWidget {
   final IconData icon;
@@ -481,19 +451,21 @@ class _NavBtn extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: isDark ? cs.surfaceContainerHigh : cs.surfaceContainerLow,
+          color: isDark
+              ? cs.surfaceContainerHigh
+              : cs.surfaceContainerLow,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+            color:
+                cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
           ),
         ),
-        child: Icon(icon, color: cs.onSurface.withOpacity(0.7), size: 22),
+        child: Icon(icon,
+            color: cs.onSurface.withOpacity(0.7), size: 22),
       ),
     );
   }
 }
-
-// ── Overflow Cell (prev/next month) ────────────────────────────────────────────
 
 class _CalendarCell extends StatelessWidget {
   final String label;
@@ -501,13 +473,12 @@ class _CalendarCell extends StatelessWidget {
   final bool isSunday;
   final ColorScheme cs;
   final bool isDark;
-  const _CalendarCell({
-    required this.label,
-    required this.isOverflow,
-    required this.isSunday,
-    required this.cs,
-    required this.isDark,
-  });
+  const _CalendarCell(
+      {required this.label,
+      required this.isOverflow,
+      required this.isSunday,
+      required this.cs,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -528,14 +499,14 @@ class _CalendarCell extends StatelessWidget {
   }
 }
 
-// ── Calendar Task Tile ─────────────────────────────────────────────────────────
-
 class _CalendarTaskTile extends StatelessWidget {
   final Task task;
   final VoidCallback onTap;
   final String Function(DateTime) formatJam;
   const _CalendarTaskTile(
-      {required this.task, required this.onTap, required this.formatJam});
+      {required this.task,
+      required this.onTap,
+      required this.formatJam});
 
   Color _barColor() {
     if (task.isSelesai) return const Color(0xFF006C4B);
@@ -593,17 +564,18 @@ class _CalendarTaskTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color:
-              isDark ? cs.surfaceContainerHighest : cs.surfaceContainerLowest,
+          color: isDark
+              ? cs.surfaceContainerHighest
+              : cs.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+            color:
+                cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
           ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left color bar
             Container(
               width: 4,
               height: 90,
@@ -617,12 +589,11 @@ class _CalendarTaskTile extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Priority badge + time
                     Row(
                       children: [
                         Container(
@@ -637,7 +608,9 @@ class _CalendarTaskTile extends StatelessWidget {
                           child: Text(
                             _priorityLabel(),
                             style: TextStyle(
-                              color: isDark ? barColor : _priorityText(),
+                              color: isDark
+                                  ? barColor
+                                  : _priorityText(),
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -646,7 +619,8 @@ class _CalendarTaskTile extends StatelessWidget {
                         ),
                         const Spacer(),
                         Icon(Icons.access_time_rounded,
-                            size: 13, color: cs.onSurface.withOpacity(0.4)),
+                            size: 13,
+                            color: cs.onSurface.withOpacity(0.4)),
                         const SizedBox(width: 4),
                         Text(
                           formatJam(task.deadline),
@@ -658,10 +632,7 @@ class _CalendarTaskTile extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 8),
-
-                    // Task name
                     Text(
                       task.namaTugas,
                       maxLines: 1,
@@ -670,16 +641,16 @@ class _CalendarTaskTile extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                         color: cs.onSurface,
-                        decoration:
-                            task.isSelesai ? TextDecoration.lineThrough : null,
+                        decoration: task.isSelesai
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
-                    // Description / course
                     Text(
-                      task.catatan.isNotEmpty ? task.catatan : task.mataKuliah,
+                      task.catatan.isNotEmpty
+                          ? task.catatan
+                          : task.mataKuliah,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

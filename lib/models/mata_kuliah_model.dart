@@ -14,5 +14,14 @@ class MataKuliah extends HiveObject {
   @HiveField(2)
   int warna;
 
-  MataKuliah({required this.id, required this.nama, required this.warna});
+  /// 0 = tidak ditentukan / semester aktif, 1-8 = semester spesifik
+  @HiveField(3)
+  int semester;
+
+  MataKuliah({
+    required this.id,
+    required this.nama,
+    required this.warna,
+    this.semester = 0,
+  });
 }

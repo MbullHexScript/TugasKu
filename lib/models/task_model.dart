@@ -41,6 +41,18 @@ class Task extends HiveObject {
   @HiveField(10)
   List<bool> subtasksDone;
 
+  /// Gunakan notifikasi kustom (false = pakai jadwal default)
+  @HiveField(11)
+  bool useCustomNotif;
+
+  /// Jam notifikasi kustom di hari H (0-23), nullable
+  @HiveField(12)
+  int? customNotifHour;
+
+  /// Menit notifikasi kustom di hari H (0-59), nullable
+  @HiveField(13)
+  int? customNotifMinute;
+
   Task({
     required this.id,
     required this.namaTugas,
@@ -53,6 +65,9 @@ class Task extends HiveObject {
     this.catatan = '',
     List<String>? subtasks,
     List<bool>? subtasksDone,
+    this.useCustomNotif = false,
+    this.customNotifHour,
+    this.customNotifMinute,
   })  : subtasks = subtasks ?? [],
         subtasksDone = subtasksDone ?? [];
 
