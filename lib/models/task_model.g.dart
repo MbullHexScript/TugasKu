@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Manually maintained to include fields 8-10 (catatan, subtasks, subtasksDone)
+// Manually maintained to include fields 8-13
 
 part of 'task_model.dart';
 
@@ -26,13 +26,16 @@ class TaskAdapter extends TypeAdapter<Task> {
       catatan: fields[8] as String? ?? '',
       subtasks: (fields[9] as List?)?.cast<String>() ?? [],
       subtasksDone: (fields[10] as List?)?.cast<bool>() ?? [],
+      useCustomNotif: fields[11] as bool? ?? false,
+      customNotifHour: fields[12] as int?,
+      customNotifMinute: fields[13] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(14) // total fields
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -54,7 +57,13 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(9)
       ..write(obj.subtasks)
       ..writeByte(10)
-      ..write(obj.subtasksDone);
+      ..write(obj.subtasksDone)
+      ..writeByte(11)
+      ..write(obj.useCustomNotif)
+      ..writeByte(12)
+      ..write(obj.customNotifHour)
+      ..writeByte(13)
+      ..write(obj.customNotifMinute);
   }
 
   @override

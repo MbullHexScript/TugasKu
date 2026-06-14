@@ -17,9 +17,10 @@ void main() async {
   ));
 
   // Hive wajib selesai dulu sebelum runApp
+  // HiveService.init sudah register semua adapter termasuk NotificationLogAdapter
   await HiveService.init();
 
-  // Notifikasi NON-BLOCKING — tidak di-await agar runApp tidak tertahan
+  // Notifikasi NON-BLOCKING
   final notificationService = NotificationService();
   notificationService.init();
 
@@ -46,7 +47,7 @@ class TugasKuApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildLightTheme(),
       darkTheme: _buildDarkTheme(),
-      themeMode: ThemeMode.light, // ← selalu pakai tema putih
+      themeMode: ThemeMode.light,
       home: const SplashScreen(),
     );
   }
@@ -112,7 +113,8 @@ class TugasKuApp extends StatelessWidget {
       cardTheme: CardThemeData(
         elevation: 0,
         color: surfaceLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: EdgeInsets.zero,
       ),
       appBarTheme: const AppBarTheme(
@@ -146,7 +148,8 @@ class TugasKuApp extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999)),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surfaceLowest,
@@ -161,7 +164,8 @@ class TugasKuApp extends StatelessWidget {
         foregroundColor: Colors.white,
         shape: StadiumBorder(),
       ),
-      dividerTheme: DividerThemeData(color: outlineVariant.withOpacity(0.6)),
+      dividerTheme:
+          DividerThemeData(color: outlineVariant.withOpacity(0.6)),
     );
   }
 
@@ -220,7 +224,8 @@ class TugasKuApp extends StatelessWidget {
       cardTheme: CardThemeData(
         elevation: 0,
         color: surfaceLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: EdgeInsets.zero,
       ),
       appBarTheme: const AppBarTheme(
@@ -256,7 +261,8 @@ class TugasKuApp extends StatelessWidget {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: surfaceLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999)),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surfaceLowest,
@@ -266,7 +272,8 @@ class TugasKuApp extends StatelessWidget {
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
       ),
-      dividerTheme: DividerThemeData(color: outlineVariant.withOpacity(0.6)),
+      dividerTheme:
+          DividerThemeData(color: outlineVariant.withOpacity(0.6)),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: Colors.white,

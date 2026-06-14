@@ -22,6 +22,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late String _prioritas;
   late DateTime _deadline;
   late String _status;
+
+  // ── Fitur 1: Pengingat custom ──
+  late bool _useDefaultNotif;
+  late int _customNotifHour;
+  late int _customNotifMinute;
+
   bool _isSaving = false;
 
   bool get isEditMode => widget.task != null;
@@ -35,12 +41,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _prioritas = task?.prioritas ?? 'sedang';
     _deadline = task?.deadline ?? DateTime.now().add(const Duration(days: 7));
     _status = task?.status ?? 'belum';
+
+    // Notif: default ON (useCustomNotif false → toggle default ON)
+    _useDefaultNotif = !(task?.useCustomNotif ?? false);
+    _customNotifHour = task?.customNotifHour ?? 20;
+    _customNotifMinute = task?.customNotifMinute ?? 0;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Auto-pilih mata kuliah pertama jika belum dipilih (saat tambah tugas baru)
     if (_mataKuliah.isEmpty && !isEditMode) {
       final mkProvider = context.read<MataKuliahProvider>();
       if (mkProvider.namaMataKuliah.isNotEmpty) {
@@ -63,7 +73,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       lastDate: DateTime.now().add(const Duration(days: 730)),
     );
     if (picked == null) return;
-    if (!mounted) return; // guard setelah await pertama
+    if (!mounted) return;
 
     final time = await showTimePicker(
       // ignore: use_build_context_synchronously
@@ -75,6 +85,20 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     setState(() {
       _deadline = DateTime(
           picked.year, picked.month, picked.day, time.hour, time.minute);
+    });
+  }
+
+  Future<void> _pilihWaktuNotif() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+          hour: _customNotifHour, minute: _customNotifMinute),
+      helpText: 'Pilih jam pengingat di hari deadline',
+    );
+    if (picked == null) return;
+    setState(() {
+      _customNotifHour = picked.hour;
+      _customNotifMinute = picked.minute;
     });
   }
 
@@ -93,13 +117,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       return;
     }
 
-    // Simpan referensi sebelum async gap
     final provider = context.read<TaskProvider>();
     final messenger = ScaffoldMessenger.of(context);
     final nav = Navigator.of(context);
 
     setState(() => _isSaving = true);
     try {
+      final useCustom = !_useDefaultNotif;
       if (isEditMode) {
         final task = widget.task!;
         task.namaTugas = _namaTugasCtrl.text.trim();
@@ -108,6 +132,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         task.deadline = _deadline;
         task.status = _status;
         task.isSelesai = _status == 'selesai';
+        task.useCustomNotif = useCustom;
+        task.customNotifHour = useCustom ? _customNotifHour : null;
+        task.customNotifMinute = useCustom ? _customNotifMinute : null;
         await provider.editTugas(task);
       } else {
         final task = Task(
@@ -119,6 +146,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           isSelesai: _status == 'selesai',
           status: _status,
           createdAt: DateTime.now(),
+          useCustomNotif: useCustom,
+          customNotifHour: useCustom ? _customNotifHour : null,
+          customNotifMinute: useCustom ? _customNotifMinute : null,
         );
         await provider.tambahTugas(task);
       }
@@ -135,21 +165,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   String _formatDeadline(DateTime dt) {
     const bulan = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mei',
-      'Jun',
-      'Jul',
-      'Agu',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Des'
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
     ];
     return '${dt.day} ${bulan[dt.month - 1]} ${dt.year}, '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatJamMenit(int hour, int minute) {
+    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} WIB';
   }
 
   @override
@@ -217,10 +241,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(context, false);
-                    // Navigasi ke Settings agar user bisa tambah mata kuliah
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const SettingsScreen()),
                     );
                   },
                   icon: const Icon(Icons.settings_rounded,
@@ -246,14 +270,74 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       );
     }
 
-    // Auto-select mata kuliah pertama jika belum dipilih
-    // (sudah dihandle di didChangeDependencies, ini sebagai fallback)
     if (_mataKuliah.isEmpty && mkProvider.namaMataKuliah.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted)
+        if (mounted) {
           setState(() => _mataKuliah = mkProvider.namaMataKuliah.first);
+        }
       });
     }
+
+    // ── Build dropdown items dengan grouping ──
+    final semesterIni = mkProvider.mataKuliahSemesterIni;
+    final lintasSemester = mkProvider.mataKuliahLintasSemester;
+    final semAktif = mkProvider.semesterAktif;
+
+    final dropdownItems = <DropdownMenuItem<String>>[];
+
+    // Header "Semester Ini"
+    if (semesterIni.isNotEmpty) {
+      dropdownItems.add(DropdownMenuItem<String>(
+        enabled: false,
+        value: '__header_ini__',
+        child: Text(
+          '── Semester Ini (Sem $semAktif) ──',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: cs.primary.withOpacity(0.6),
+            letterSpacing: 0.3,
+          ),
+        ),
+      ));
+      for (final mk in semesterIni) {
+        dropdownItems.add(DropdownMenuItem<String>(
+          value: mk.nama,
+          child: Text(mk.nama),
+        ));
+      }
+    }
+
+    // Header "Semester Lain"
+    if (lintasSemester.isNotEmpty) {
+      dropdownItems.add(DropdownMenuItem<String>(
+        enabled: false,
+        value: '__header_lain__',
+        child: Text(
+          '── Semester Lain ──',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: cs.onSurface.withOpacity(0.4),
+            letterSpacing: 0.3,
+          ),
+        ),
+      ));
+      for (final mk in lintasSemester) {
+        dropdownItems.add(DropdownMenuItem<String>(
+          value: mk.nama,
+          child: Text('${mk.nama} (Sem ${mk.semester})'),
+        ));
+      }
+    }
+
+    // Pastikan value yang dipilih valid (bukan header)
+    final validValues = dropdownItems
+        .where((item) => item.enabled != false)
+        .map((item) => item.value!)
+        .toList();
+    final currentValue =
+        validValues.contains(_mataKuliah) ? _mataKuliah : null;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -272,17 +356,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             fontSize: 20,
           ),
         ),
-        actions: [
-          Icon(Icons.notifications_outlined, color: cs.primary),
-          const SizedBox(width: 16),
-        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
           children: [
-            // ── Page heading ───────────────────────────────────────
+            // ── Page heading ──
             Text(
               'FOKUS AKADEMIK',
               style: TextStyle(
@@ -305,14 +385,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
             const SizedBox(height: 28),
 
-            // ── Nama Tugas ─────────────────────────────────────────
+            // ── Nama Tugas ──
             _FieldLabel('Nama Tugas *'),
             const SizedBox(height: 6),
             TextFormField(
               controller: _namaTugasCtrl,
               decoration: InputDecoration(
                 hintText: 'Masukkan nama tugas...',
-                hintStyle: TextStyle(color: cs.onSurface.withOpacity(0.35)),
+                hintStyle:
+                    TextStyle(color: cs.onSurface.withOpacity(0.35)),
                 filled: true,
                 fillColor: isDark
                     ? cs.surfaceContainerHighest
@@ -321,8 +402,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18, vertical: 16),
               ),
               validator: (val) => (val == null || val.trim().isEmpty)
                   ? 'Nama tugas wajib diisi'
@@ -332,11 +413,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Mata Kuliah ─────────────────────────────────────────
+            // ── Mata Kuliah (Grouped Dropdown) ──
             _FieldLabel('Mata Kuliah *'),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
-              value: _mataKuliah.isNotEmpty ? _mataKuliah : null,
+              value: currentValue,
               decoration: InputDecoration(
                 hintText: 'Pilih mata kuliah',
                 filled: true,
@@ -347,22 +428,24 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18, vertical: 16),
               ),
-              icon: Icon(Icons.keyboard_arrow_down_rounded, color: cs.primary),
-              items: mkProvider.namaMataKuliah
-                  .map((nama) =>
-                      DropdownMenuItem(value: nama, child: Text(nama)))
-                  .toList(),
-              onChanged: (val) => setState(() => _mataKuliah = val ?? ''),
+              icon: Icon(Icons.keyboard_arrow_down_rounded,
+                  color: cs.primary),
+              items: dropdownItems,
+              onChanged: (val) {
+                if (val != null) setState(() => _mataKuliah = val);
+              },
               validator: (val) =>
-                  (val == null || val.isEmpty) ? 'Pilih mata kuliah' : null,
+                  (val == null || val.isEmpty || val.startsWith('__'))
+                      ? 'Pilih mata kuliah'
+                      : null,
             ),
 
             const SizedBox(height: 20),
 
-            // ── Prioritas ──────────────────────────────────────────
+            // ── Prioritas ──
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -371,7 +454,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     : cs.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+                  color:
+                      cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
                 ),
               ),
               child: Column(
@@ -391,23 +475,27 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       for (final p in ['rendah', 'sedang', 'tinggi'])
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4),
                             child: GestureDetector(
-                              onTap: () => setState(() => _prioritas = p),
+                              onTap: () =>
+                                  setState(() => _prioritas = p),
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
+                                duration:
+                                    const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10),
                                 decoration: BoxDecoration(
                                   color: _prioritas == p
                                       ? cs.primary
                                       : isDark
                                           ? cs.surfaceContainerHigh
                                           : cs.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius:
+                                      BorderRadius.circular(14),
                                   border: Border.all(
-                                    color: cs.outlineVariant
-                                        .withOpacity(isDark ? 0.18 : 0.60),
+                                    color: cs.outlineVariant.withOpacity(
+                                        isDark ? 0.18 : 0.60),
                                   ),
                                 ),
                                 child: Center(
@@ -434,7 +522,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Deadline ──────────────────────────────────────────
+            // ── Deadline ──
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -443,7 +531,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     : cs.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+                  color:
+                      cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
                 ),
               ),
               child: Row(
@@ -488,7 +577,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     onPressed: _pilihDeadline,
                     child: Text('Ubah',
                         style: TextStyle(
-                            color: cs.primary, fontWeight: FontWeight.w700)),
+                            color: cs.primary,
+                            fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -496,7 +586,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Status ────────────────────────────────────────────
+            // ── Card Pengingat (Fitur 1) ──
+            _buildPengingatCard(cs, isDark),
+
+            const SizedBox(height: 20),
+
+            // ── Status ──
             _FieldLabel('Status'),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
@@ -510,33 +605,39 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18, vertical: 16),
               ),
               icon: Icon(Icons.unfold_more_rounded,
                   color: cs.onSurface.withOpacity(0.5)),
               items: const [
                 DropdownMenuItem(value: 'belum', child: Text('Belum')),
                 DropdownMenuItem(
-                    value: 'proses', child: Text('Sedang Dikerjakan')),
-                DropdownMenuItem(value: 'selesai', child: Text('Selesai')),
+                    value: 'proses',
+                    child: Text('Sedang Dikerjakan')),
+                DropdownMenuItem(
+                    value: 'selesai', child: Text('Selesai')),
               ],
-              onChanged: (val) => setState(() => _status = val ?? 'belum'),
+              onChanged: (val) =>
+                  setState(() => _status = val ?? 'belum'),
             ),
 
             const SizedBox(height: 32),
 
-            // ── Action Buttons ────────────────────────────────────
+            // ── Action Buttons ──
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed:
-                        _isSaving ? null : () => Navigator.pop(context, false),
+                    onPressed: _isSaving
+                        ? null
+                        : () => Navigator.pop(context, false),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding:
+                          const EdgeInsets.symmetric(vertical: 15),
                       side: BorderSide(
-                          color: cs.onSurface.withOpacity(0.25), width: 1.5),
+                          color: cs.onSurface.withOpacity(0.25),
+                          width: 1.5),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                     ),
@@ -561,8 +662,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white),
                             ),
                           )
                         : const Icon(Icons.save_rounded,
@@ -579,7 +680,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding:
+                          const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
@@ -593,7 +695,198 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       ),
     );
   }
+
+  /// Card Pengingat — Fitur 1
+  Widget _buildPengingatCard(ColorScheme cs, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark
+            ? cs.surfaceContainerHighest
+            : cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child:
+                    Icon(Icons.notifications_rounded, color: cs.primary, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'PENGINGAT',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    color: cs.onSurface,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // Toggle default
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Gunakan pengaturan default',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _useDefaultNotif,
+                onChanged: (val) => setState(() => _useDefaultNotif = val),
+                activeColor: cs.primary,
+              ),
+            ],
+          ),
+
+          // Info box atau picker — animasi smooth
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: _useDefaultNotif
+                ? _buildInfoDefault(cs, isDark)
+                : _buildCustomPicker(cs, isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoDefault(ColorScheme cs, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cs.primary.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: cs.primary.withOpacity(0.15)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _InfoRow(
+              icon: Icons.calendar_today_outlined,
+              text: 'H-2: notif pukul 08.00 pagi',
+              cs: cs,
+            ),
+            const SizedBox(height: 6),
+            _InfoRow(
+              icon: Icons.access_time_rounded,
+              text: 'H : notif 2 jam sebelum deadline',
+              cs: cs,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomPicker(ColorScheme cs, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Kirim notif di hari deadline pada pukul:',
+            style: TextStyle(
+              fontSize: 13,
+              color: cs.onSurface.withOpacity(0.65),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              // Tampilan jam terpilih
+              GestureDetector(
+                onTap: _pilihWaktuNotif,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? cs.surfaceContainerHigh
+                        : cs.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: cs.primary.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    _formatJamMenit(_customNotifHour, _customNotifMinute),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      color: cs.primary,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              TextButton(
+                onPressed: _pilihWaktuNotif,
+                child: Text(
+                  'Pilih Waktu',
+                  style: TextStyle(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Info H-2 tetap
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 14, color: cs.onSurface.withOpacity(0.45)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Notif H-2 tetap dikirim pukul 08.00 pagi.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: cs.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+// ── Helper Widgets ─────────────────────────────────────────────────────────────
 
 class _FieldLabel extends StatelessWidget {
   final String text;
@@ -609,6 +902,32 @@ class _FieldLabel extends StatelessWidget {
         fontSize: 14,
         color: cs.onSurface,
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final ColorScheme cs;
+  const _InfoRow(
+      {required this.icon, required this.text, required this.cs});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 13, color: cs.primary.withOpacity(0.7)),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            color: cs.primary.withOpacity(0.85),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

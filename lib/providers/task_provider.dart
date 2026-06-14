@@ -147,7 +147,6 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> hapusTugas(Task task) async {
-    // Simpan data untuk undo
     _lastDeletedData = {
       'id': task.id,
       'namaTugas': task.namaTugas,
@@ -160,6 +159,9 @@ class TaskProvider extends ChangeNotifier {
       'catatan': task.catatan,
       'subtasks': List<String>.from(task.subtasks),
       'subtasksDone': List<bool>.from(task.subtasksDone),
+      'useCustomNotif': task.useCustomNotif,
+      'customNotifHour': task.customNotifHour,
+      'customNotifMinute': task.customNotifMinute,
     };
     await _safeNotif(() => _notifService.batalkanNotifikasiTugas(task.id));
     await task.delete();
@@ -183,6 +185,9 @@ class TaskProvider extends ChangeNotifier {
       catatan: data['catatan'] as String,
       subtasks: data['subtasks'] as List<String>,
       subtasksDone: data['subtasksDone'] as List<bool>,
+      useCustomNotif: data['useCustomNotif'] as bool? ?? false,
+      customNotifHour: data['customNotifHour'] as int?,
+      customNotifMinute: data['customNotifMinute'] as int?,
     );
     await HiveService.getTaskBox().put(task.id, task);
     if (!task.isSelesai) {

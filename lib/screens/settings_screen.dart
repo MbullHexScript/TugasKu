@@ -19,6 +19,10 @@ class SettingsScreen extends StatelessWidget {
 
     return Consumer2<MataKuliahProvider, TaskProvider>(
       builder: (context, mkProv, taskProv, _) {
+        final semAktif = mkProv.semesterAktif;
+        final mkSemIni = mkProv.mataKuliahSemesterIni;
+        final mkLain = mkProv.mataKuliahLintasSemester;
+
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
@@ -32,327 +36,361 @@ class SettingsScreen extends StatelessWidget {
                 titleSpacing: 0,
                 title: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Pengaturan',
-                        style: TextStyle(
-                          color: cs.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.notifications_outlined,
-                          color: cs.primary, size: 26),
-                    ],
+                  child: Text(
+                    'Pengaturan',
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
                 sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      // Profile header
-                      ValueListenableBuilder<Box>(
-                        valueListenable:
-                            HiveService.getSettingsBox().listenable(
-                          keys: const [
-                            'profileName',
-                            'profileProgram',
-                            'profileSemester'
-                          ],
-                        ),
-                        builder: (context, _, __) {
-                          final name = HiveService.getProfileName();
-                          final program = HiveService.getProfileProgram();
-                          final semester = HiveService.getProfileSemester();
-                          return InkWell(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const EditProfileScreen()),
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(3),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: cs.primary.withOpacity(0.35),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: () {
-                                      final photoPath =
-                                          HiveService.getProfilePhoto();
-                                      final hasPhoto = photoPath != null &&
-                                          photoPath.isNotEmpty;
-                                      return CircleAvatar(
-                                        radius: 26,
-                                        backgroundColor:
-                                            cs.primary.withOpacity(0.12),
-                                        backgroundImage: hasPhoto
-                                            ? FileImage(File(photoPath))
-                                            : null,
-                                        child: hasPhoto
-                                            ? null
-                                            : Icon(Icons.person_rounded,
-                                                color: cs.primary, size: 26),
-                                      );
-                                    }(),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 18,
-                                            color: cs.onSurface,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          '$program • Semester $semester',
-                                          style: TextStyle(
-                                            color:
-                                                cs.onSurface.withOpacity(0.55),
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(Icons.chevron_right_rounded,
-                                      color: cs.onSurface.withOpacity(0.35)),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                  delegate: SliverChildListDelegate([
+                    // ── Profile header ──
+                    ValueListenableBuilder<Box>(
+                      valueListenable:
+                          HiveService.getSettingsBox().listenable(
+                        keys: const [
+                          'profileName',
+                          'profileProgram',
+                          'profileSemester',
+                          'profilePhoto',
+                        ],
                       ),
+                      builder: (context, _, __) {
+                        final name = HiveService.getProfileName();
+                        final program = HiveService.getProfileProgram();
+                        final semester = HiveService.getProfileSemester();
+                        final photoPath = HiveService.getProfilePhoto();
+                        final hasPhoto =
+                            photoPath != null && photoPath.isNotEmpty;
 
-                      const SizedBox(height: 18),
-                      const _SectionLabel(label: 'Akademik'),
-                      const SizedBox(height: 10),
-
-                      _CardShell(
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(16, 14, 16, 10),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: cs.primary.withOpacity(0.10),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(Icons.menu_book_rounded,
-                                        color: cs.primary, size: 18),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      'Mata Kuliah',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 15,
-                                        color: cs.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                  FilledButton(
-                                    onPressed: () =>
-                                        _dialogTambahMK(context, mkProv),
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: cs.primary,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 8),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(999)),
-                                      elevation: 0,
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.add_rounded,
-                                            size: 16, color: Colors.white),
-                                        SizedBox(width: 6),
-                                        Text(
-                                          'Tambah',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (mkProv.daftarMataKuliah.isEmpty)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(16),
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const EditProfileScreen()),
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(3),
                                   decoration: BoxDecoration(
-                                    color: cs.primary.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(14),
+                                    shape: BoxShape.circle,
                                     border: Border.all(
-                                        color: cs.primary.withOpacity(0.2)),
+                                      color: cs.primary.withOpacity(0.35),
+                                      width: 2,
+                                    ),
                                   ),
+                                  child: CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor:
+                                        cs.primary.withOpacity(0.12),
+                                    backgroundImage: hasPhoto
+                                        ? FileImage(File(photoPath))
+                                        : null,
+                                    child: hasPhoto
+                                        ? null
+                                        : Icon(Icons.person_rounded,
+                                            color: cs.primary, size: 26),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
                                   child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.info_outline_rounded,
-                                          color: cs.primary, size: 28),
-                                      const SizedBox(height: 8),
                                       Text(
-                                        'Belum ada mata kuliah!',
+                                        name,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w800,
-                                          color: cs.primary,
-                                          fontSize: 14,
+                                          fontSize: 18,
+                                          color: cs.onSurface,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const SizedBox(height: 2),
                                       Text(
-                                        'Tambahkan mata kuliah terlebih dahulu agar dapat membuat tugas.',
-                                        textAlign: TextAlign.center,
+                                        '$program • Semester $semester',
                                         style: TextStyle(
+                                          color: cs.onSurface
+                                              .withOpacity(0.55),
+                                          fontWeight: FontWeight.w600,
                                           fontSize: 12,
-                                          color: cs.onSurface.withOpacity(0.6),
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: FilledButton.icon(
-                                          onPressed: () =>
-                                              _dialogTambahMK(context, mkProv),
-                                          icon: const Icon(Icons.add_rounded,
-                                              size: 16, color: Colors.white),
-                                          label: const Text(
-                                            'Tambah Mata Kuliah Sekarang',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w800,
-                                                fontSize: 13),
-                                          ),
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: cs.primary,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12)),
-                                            elevation: 0,
-                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              )
-                            else
-                              Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                Icon(Icons.chevron_right_rounded,
+                                    color:
+                                        cs.onSurface.withOpacity(0.35)),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 18),
+                    const _SectionLabel(label: 'Akademik'),
+                    const SizedBox(height: 10),
+
+                    _CardShell(
+                      child: Column(
+                        children: [
+                          // Header card + tombol tambah
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                                16, 14, 16, 10),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: cs.primary.withOpacity(0.10),
+                                    borderRadius:
+                                        BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(Icons.menu_book_rounded,
+                                      color: cs.primary, size: 18),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Mata Kuliah',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                ),
+                                FilledButton(
+                                  onPressed: () => _dialogTambahMK(
+                                      context, mkProv, semAktif),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: cs.primary,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 8),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(999)),
+                                    elevation: 0,
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.add_rounded,
+                                          size: 16,
+                                          color: Colors.white),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Tambah',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Empty state
+                          if (mkProv.daftarMataKuliah.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  16, 4, 16, 16),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: cs.primary.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                      color:
+                                          cs.primary.withOpacity(0.2)),
+                                ),
                                 child: Column(
                                   children: [
-                                    for (final mk
-                                        in mkProv.daftarMataKuliah) ...[
+                                    Icon(Icons.info_outline_rounded,
+                                        color: cs.primary, size: 28),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Belum ada mata kuliah!',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        color: cs.primary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Tambahkan mata kuliah terlebih dahulu agar dapat membuat tugas.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: cs.onSurface
+                                            .withOpacity(0.6),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: FilledButton.icon(
+                                        onPressed: () =>
+                                            _dialogTambahMK(context,
+                                                mkProv, semAktif),
+                                        icon: const Icon(
+                                            Icons.add_rounded,
+                                            size: 16,
+                                            color: Colors.white),
+                                        label: const Text(
+                                          'Tambah Mata Kuliah Sekarang',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 13),
+                                        ),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: cs.primary,
+                                          padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 12),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      12)),
+                                          elevation: 0,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  16, 0, 16, 16),
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  // ── Semester Ini ──
+                                  if (mkSemIni.isNotEmpty) ...[
+                                    _SubSectionLabel(
+                                        label:
+                                            'SEMESTER INI (SEM $semAktif)'),
+                                    const SizedBox(height: 8),
+                                    for (final mk in mkSemIni) ...[
                                       _MataKuliahTile(
                                         nama: mk.nama,
                                         warna: Color(mk.warna),
                                         subtitle:
                                             '${taskProv.semuaTugas.where((t) => t.mataKuliah == mk.nama).length} tugas',
-                                        onDelete: () => _konfirmasiHapusMK(
-                                            context, mkProv, mk),
+                                        onDelete: () =>
+                                            _konfirmasiHapusMK(
+                                                context, mkProv, mk),
                                       ),
                                       const SizedBox(height: 10),
                                     ],
                                   ],
-                                ),
+
+                                  // ── Semester Lain ──
+                                  if (mkLain.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    const _SubSectionLabel(
+                                        label: 'SEMESTER LAIN'),
+                                    const SizedBox(height: 8),
+                                    for (final mk in mkLain) ...[
+                                      _MataKuliahTile(
+                                        nama: mk.nama,
+                                        warna: Color(mk.warna),
+                                        subtitle:
+                                            'Semester ${mk.semester} • ${taskProv.semuaTugas.where((t) => t.mataKuliah == mk.nama).length} tugas',
+                                        onDelete: () =>
+                                            _konfirmasiHapusMK(
+                                                context, mkProv, mk),
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  ],
+                                ],
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
+                    ),
 
-                      const SizedBox(height: 18),
-                      const _SectionLabel(label: 'Sistem & Informasi'),
-                      const SizedBox(height: 10),
+                    const SizedBox(height: 18),
+                    const _SectionLabel(label: 'Sistem & Informasi'),
+                    const SizedBox(height: 10),
 
-                      _CardShell(
-                        child: Column(
-                          children: const [
-                            _InfoTile(
-                              icon: Icons.info_outline_rounded,
-                              label: 'Versi Aplikasi',
-                              trailingText: 'v1.2.1',
-                              isFirst: true,
-                            ),
-                            _InfoDivider(),
-                            _InfoTile(
-                              icon: Icons.code_rounded,
-                              label: 'Developer',
-                              trailingText: 'Engineer Plenger',
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 26),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => _logout(context),
-                          child: const Text(
-                            'Hapus Akun',
-                            style: TextStyle(
-                              color: Color(0xFFDC2626),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
+                    _CardShell(
+                      child: Column(
+                        children: const [
+                          _InfoTile(
+                            icon: Icons.info_outline_rounded,
+                            label: 'Versi Aplikasi',
+                            trailingText: 'v1.3.0',
+                            isFirst: true,
                           ),
-                        ),
+                          _InfoDivider(),
+                          _InfoTile(
+                            icon: Icons.code_rounded,
+                            label: 'Developer',
+                            trailingText: 'Engineer Plenger',
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                      Center(
-                        child: Text(
-                          'DIBUAT DENGAN ♥ UNTUK MAHASISWA INDONESIA',
-                          textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 26),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => _logout(context),
+                        child: const Text(
+                          'Hapus Akun',
                           style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface.withOpacity(0.35),
-                            letterSpacing: 1.0,
+                            color: Color(0xFFDC2626),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Text(
+                        'DIBUAT DENGAN ♥ UNTUK MAHASISWA INDONESIA',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface.withOpacity(0.35),
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ]),
                 ),
               ),
             ],
@@ -362,41 +400,134 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _dialogTambahMK(BuildContext context, MataKuliahProvider provider) {
+  /// Dialog tambah mata kuliah dengan pilihan semester
+  void _dialogTambahMK(
+      BuildContext context, MataKuliahProvider provider, int semAktif) {
     final ctrl = TextEditingController();
+    // 0 = semester ini, -1 = pilih semester lain (radio state)
+    int selectedSemesterRadio = 0; // 0 = semester ini
+    int selectedSemesterLain = semAktif > 1 ? semAktif - 1 : 1;
+
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Tambah Mata Kuliah',
-            style: TextStyle(fontWeight: FontWeight.w800)),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(
-            labelText: 'Nama Mata Kuliah',
-            prefixIcon: Icon(Icons.school_outlined),
-          ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          onSubmitted: (_) async {
-            if (ctrl.text.trim().isEmpty) return;
-            await provider.tambahMataKuliah(ctrl.text.trim());
-            if (context.mounted) Navigator.pop(context);
-          },
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal')),
-          FilledButton(
-            onPressed: () async {
-              if (ctrl.text.trim().isEmpty) return;
-              await provider.tambahMataKuliah(ctrl.text.trim());
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: const Text('Tambah'),
-          ),
-        ],
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final cs = Theme.of(ctx).colorScheme;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            title: const Text('Tambah Mata Kuliah',
+                style: TextStyle(fontWeight: FontWeight.w800)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: ctrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama Mata Kuliah',
+                    prefixIcon: Icon(Icons.school_outlined),
+                  ),
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Semester',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Radio: Semester ini
+                InkWell(
+                  onTap: () =>
+                      setDialogState(() => selectedSemesterRadio = 0),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Radio<int>(
+                          value: 0,
+                          groupValue: selectedSemesterRadio,
+                          onChanged: (v) => setDialogState(
+                              () => selectedSemesterRadio = v ?? 0),
+                          activeColor: cs.primary,
+                        ),
+                        Text(
+                          'Semester ini (Sem $semAktif)',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Radio: Semester lain
+                InkWell(
+                  onTap: () =>
+                      setDialogState(() => selectedSemesterRadio = -1),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Radio<int>(
+                          value: -1,
+                          groupValue: selectedSemesterRadio,
+                          onChanged: (v) => setDialogState(
+                              () => selectedSemesterRadio = v ?? -1),
+                          activeColor: cs.primary,
+                        ),
+                        const Text(
+                          'Semester lain: ',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        if (selectedSemesterRadio == -1) ...[
+                          const SizedBox(width: 8),
+                          DropdownButton<int>(
+                            value: selectedSemesterLain,
+                            isDense: true,
+                            items: [
+                              for (int s = 1; s <= 8; s++)
+                                if (s != semAktif)
+                                  DropdownMenuItem(
+                                      value: s,
+                                      child: Text('Sem $s'))
+                            ],
+                            onChanged: (v) => setDialogState(() =>
+                                selectedSemesterLain = v ?? selectedSemesterLain),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  if (ctrl.text.trim().isEmpty) return;
+                  final semester = selectedSemesterRadio == 0
+                      ? 0 // semester ini
+                      : selectedSemesterLain;
+                  await provider.tambahMataKuliah(ctrl.text.trim(),
+                      semester: semester);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Tambah'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -406,7 +537,8 @@ class SettingsScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
         title: const Text('Hapus Mata Kuliah?'),
         content: Text('Yakin ingin menghapus "${mk.nama}"?'),
         actions: [
@@ -430,7 +562,8 @@ class SettingsScreen extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
         title: const Text('Keluar Akun?'),
         content: const Text(
             'Ini akan menghapus semua data lokal (tugas & mata kuliah).'),
@@ -463,6 +596,8 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+// ── Helper Widgets ─────────────────────────────────────────────────────────────
+
 class _SectionLabel extends StatelessWidget {
   final String label;
   const _SectionLabel({required this.label});
@@ -479,6 +614,25 @@ class _SectionLabel extends StatelessWidget {
           letterSpacing: 1.2,
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
         ),
+      ),
+    );
+  }
+}
+
+class _SubSectionLabel extends StatelessWidget {
+  final String label;
+  const _SubSectionLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 1.0,
+        color: cs.onSurface.withOpacity(0.4),
       ),
     );
   }
@@ -503,7 +657,8 @@ class _CardShell extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: cs.outline.withOpacity(isDark ? 0.25 : 0.12)),
+        border: Border.all(
+            color: cs.outline.withOpacity(isDark ? 0.25 : 0.12)),
       ),
       child: child,
     );
@@ -529,19 +684,22 @@ class _MataKuliahTile extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: isDark ? cs.surfaceContainerHigh : cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: cs.outlineVariant.withOpacity(isDark ? 0.20 : 0.55)),
+            color: cs.outlineVariant
+                .withOpacity(isDark ? 0.20 : 0.55)),
       ),
       child: Row(
         children: [
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(color: warna, shape: BoxShape.circle),
+            decoration:
+                BoxDecoration(color: warna, shape: BoxShape.circle),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -586,7 +744,8 @@ class _InfoDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Divider(height: 1, indent: 56, color: cs.outline.withOpacity(0.12));
+    return Divider(
+        height: 1, indent: 56, color: cs.outline.withOpacity(0.12));
   }
 }
 
@@ -621,8 +780,9 @@ class _InfoTile extends StatelessWidget {
 
     return ListTile(
       dense: true,
-      shape:
-          radius == null ? null : RoundedRectangleBorder(borderRadius: radius),
+      shape: radius == null
+          ? null
+          : RoundedRectangleBorder(borderRadius: radius),
       leading: Container(
         width: 36,
         height: 36,
@@ -632,7 +792,8 @@ class _InfoTile extends StatelessWidget {
         ),
         child: Icon(icon, color: cs.primary, size: 18),
       ),
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+      title:
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
       trailing: showChevron
           ? Icon(Icons.chevron_right_rounded,
               color: cs.onSurface.withOpacity(0.35))

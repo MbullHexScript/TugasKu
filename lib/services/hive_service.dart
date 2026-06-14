@@ -3,24 +3,28 @@ import 'dart:async';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/task_model.dart';
 import '../models/mata_kuliah_model.dart';
+import '../models/notification_log_model.dart';
 
 class HiveService {
   static const String _taskBoxName = 'tasks';
   static const String _mataKuliahBoxName = 'mata_kuliah';
   static const String _settingsBoxName = 'settings';
+  static const String _notifLogBoxName = 'notification_logs';
 
   static const String _profileNameKey = 'profileName';
   static const String _profileProgramKey = 'profileProgram';
   static const String _profileSemesterKey = 'profileSemester';
-  static const String _profilePhotoKey = 'profilePhoto'; // ← TAMBAH
+  static const String _profilePhotoKey = 'profilePhoto';
 
   static Future<void> init() async {
     await Hive.initFlutter();
     Hive.registerAdapter(TaskAdapter());
     Hive.registerAdapter(MataKuliahAdapter());
+    Hive.registerAdapter(NotificationLogAdapter());
     await Hive.openBox<Task>(_taskBoxName);
     await Hive.openBox<MataKuliah>(_mataKuliahBoxName);
     await Hive.openBox(_settingsBoxName);
+    await Hive.openBox<NotificationLog>(_notifLogBoxName);
 
     final settings = Hive.box(_settingsBoxName);
     final hadOldSeed =
@@ -39,6 +43,8 @@ class HiveService {
   static Box<MataKuliah> getMataKuliahBox() =>
       Hive.box<MataKuliah>(_mataKuliahBoxName);
   static Box getSettingsBox() => Hive.box(_settingsBoxName);
+  static Box<NotificationLog> getNotifLogBox() =>
+      Hive.box<NotificationLog>(_notifLogBoxName);
 
   static int _dateKey(DateTime dt) =>
       dt.year * 10000 + dt.month * 100 + dt.day;
@@ -98,6 +104,7 @@ class HiveService {
     var streak = settings.get('focusStreakDays', defaultValue: 0) as int;
 
     if (lastKey == todayKey) {
+      // sudah fokus hari ini, tidak perlu update streak
     } else if (lastKey == yesterdayKey) {
       streak = streak <= 0 ? 1 : streak + 1;
     } else {
@@ -108,9 +115,66 @@ class HiveService {
     await settings.put('focusStreakDays', streak);
   }
 
+  // ── Notification Log ───────────────────────────────────────────────────────
+
+  static Future<void> simpanLogNotifikasi({
+    required String judul,
+    required String pesan,
+    required DateTime waktu,
+    int? taskId,
+    String? namaTugas,
+  }) async {
+    try {
+      final box = getNotifLogBox();
+      // Auto-prune: hapus yang paling lama jika sudah >= 50
+      if (box.length >= 50) {
+        final oldest = box.values.toList()
+          ..sort((a, b) => a.waktu.compareTo(b.waktu));
+        await oldest.first.delete();
+      }
+      final id = DateTime.now().millisecondsSinceEpoch;
+      await box.put(
+        id,
+        NotificationLog(
+          id: id,
+          judul: judul,
+          pesan: pesan,
+          waktu: waktu,
+          sudahDibaca: false,
+          taskId: taskId,
+          namaTugas: namaTugas,
+        ),
+      );
+    } catch (_) {}
+  }
+
+  static int getJumlahNotifBelumDibaca() {
+    try {
+      final now = DateTime.now();
+      return getNotifLogBox()
+          .values
+          .where((log) => !log.sudahDibaca && log.waktu.isBefore(now))
+          .length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static Future<void> tandaiSemuaNotifDibaca() async {
+    try {
+      for (final log in getNotifLogBox().values) {
+        if (!log.sudahDibaca) {
+          log.sudahDibaca = true;
+          await log.save();
+        }
+      }
+    } catch (_) {}
+  }
+
   static Future<void> resetAllData() async {
     await getTaskBox().clear();
     await getMataKuliahBox().clear();
+    await getNotifLogBox().clear();
     await getSettingsBox().delete('nextTaskId');
     await getSettingsBox().delete('nextMataKuliahId');
     await getSettingsBox().delete('focusTotalMinutes');
@@ -121,7 +185,7 @@ class HiveService {
     await getSettingsBox().delete(_profileNameKey);
     await getSettingsBox().delete(_profileProgramKey);
     await getSettingsBox().delete(_profileSemesterKey);
-    await getSettingsBox().delete(_profilePhotoKey); // ← TAMBAH
+    await getSettingsBox().delete(_profilePhotoKey);
   }
 
   // ── Profile ────────────────────────────────────────────────────────────────
@@ -135,7 +199,6 @@ class HiveService {
   static int getProfileSemester() =>
       getSettingsBox().get(_profileSemesterKey, defaultValue: 5) as int;
 
-  // ← TAMBAH: getter & setter foto profil
   static String? getProfilePhoto() =>
       getSettingsBox().get(_profilePhotoKey) as String?;
 
