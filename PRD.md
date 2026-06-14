@@ -635,6 +635,7 @@ Step 3 ──► Fitur 2 (Notification Center)
 ---
 
 *Dokumen ini dibuat sebagai panduan pengembangan TugasKu v1.3.0. Setiap perubahan model Hive yang melibatkan penambahan field harus memperhatikan backward compatibility dengan data yang sudah tersimpan di device user.*
+<<<<<<< HEAD
 =======
 # PRD — TugasKu v1.3.0
 
@@ -1274,3 +1275,5 @@ Step 3 ──► Fitur 2 (Notification Center)
 
 *Dokumen ini dibuat sebagai panduan pengembangan TugasKu v1.3.0. Setiap perubahan model Hive yang melibatkan penambahan field harus memperhatikan backward compatibility dengan data yang sudah tersimpan di device user.*
 >>>>>>> d597ed2 (Before Notification Fix)
+=======
+>>>>>>> d597ed28a904f865c4eef1ea4963873e605b911a
